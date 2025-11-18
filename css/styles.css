@@ -625,6 +625,37 @@ section {
     text-align: center;
 }
 
+/* Gallery Loading/Empty States */
+.gallery-loading,
+.gallery-empty,
+.gallery-error {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+.gallery-loading::after {
+    content: '...';
+    animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+.gallery-error {
+    color: #dc3545;
+}
+
+.gallery-empty p,
+.gallery-error p {
+    margin: 0;
+}
+
 /* ===================================
    Testimonials Section
    =================================== */

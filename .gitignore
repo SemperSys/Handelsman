@@ -45,3 +45,8 @@ build/
 *.bak
 *.backup
 *backup/
+
+# Admin Portal Data
+data/
+uploads/*
+!uploads/.gitkeep

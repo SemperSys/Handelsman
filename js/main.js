@@ -164,6 +164,20 @@ if (quoteForm) {
         });
         data.services = services;
 
+        // Add metadata
+        data.id = Date.now().toString();
+        data.timestamp = new Date().toISOString();
+        data.status = 'new';
+
+        // Save to localStorage for admin panel
+        try {
+            const existingQuotes = JSON.parse(localStorage.getItem('quote_requests') || '[]');
+            existingQuotes.push(data);
+            localStorage.setItem('quote_requests', JSON.stringify(existingQuotes));
+        } catch (error) {
+            console.error('Error saving quote:', error);
+        }
+
         // Log data (in production, this would send to a server)
         console.log('Quote Request:', data);
 
@@ -222,17 +236,88 @@ animateOnScroll.forEach(el => {
 });
 
 // ===================================
-// Gallery Image Modal (Optional Enhancement)
+// Gallery - Load Images from Server
 // ===================================
-const galleryItems = document.querySelectorAll('.gallery-item');
+async function loadGalleryImages() {
+    const galleryGrid = document.getElementById('galleryGrid');
 
-galleryItems.forEach(item => {
-    item.addEventListener('click', () => {
-        // In production, you could add a lightbox/modal here
-        console.log('Gallery item clicked');
-        // Example: Open image in modal or full-screen view
+    if (!galleryGrid) return;
+
+    try {
+        const response = await fetch('http://localhost:3001/api/gallery');
+        const data = await response.json();
+
+        if (data.success && data.images && data.images.length > 0) {
+            // Clear loading message
+            galleryGrid.innerHTML = '';
+
+            // Render gallery items
+            data.images.forEach(image => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+
+                galleryItem.innerHTML = `
+                    <img src="http://localhost:3001${image.url}"
+                         alt="${escapeHtml(image.title)}"
+                         class="gallery-image"
+                         onerror="this.src='images/placeholder.jpg'">
+                    <div class="gallery-overlay">
+                        <span>${escapeHtml(image.title)}</span>
+                    </div>
+                `;
+
+                galleryGrid.appendChild(galleryItem);
+            });
+
+            // Apply scroll animations to new gallery items
+            const newGalleryItems = document.querySelectorAll('.gallery-item');
+            newGalleryItems.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+
+            // Add click handlers for gallery items
+            addGalleryClickHandlers();
+        } else {
+            // No images uploaded yet - show placeholder message
+            galleryGrid.innerHTML = `
+                <div class="gallery-empty">
+                    <p>No gallery images yet. Images will appear here once uploaded through the admin portal.</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading gallery images:', error);
+        // Fallback: Show error message
+        galleryGrid.innerHTML = `
+            <div class="gallery-error">
+                <p>Unable to load gallery images. Please ensure the server is running.</p>
+            </div>
+        `;
+    }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Add click handlers to gallery items
+function addGalleryClickHandlers() {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+
+    galleryItems.forEach(item => {
+        item.addEventListener('click', () => {
+            // In production, you could add a lightbox/modal here
+            console.log('Gallery item clicked');
+            // Example: Open image in modal or full-screen view
+        });
     });
-});
+}
 
 // ===================================
 // Active Navigation Link on Scroll
@@ -295,6 +380,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add any initialization code here
     setActiveNavLink();
+
+    // Load gallery images from server
+    loadGalleryImages();
 
     // Add loading animation complete
     document.body.style.opacity = '0';
