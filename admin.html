@@ -153,7 +153,17 @@
             <section class="admin-section" id="gallerySection">
                 <div class="section-header">
                     <h2>Gallery Management</h2>
-                    <button class="btn btn-primary" id="uploadImageBtn">
+                    <div class="filter-controls">
+                        <select id="categoryFilter" class="filter-select">
+                            <option value="all">All Categories</option>
+                            <option value="residential-mowing">Residential Lawn Mowing</option>
+                            <option value="commercial-maintenance">Commercial Lawn Maintenance</option>
+                            <option value="trimming">Trimming</option>
+                            <option value="seasonal-cleanup">Seasonal Cleanup</option>
+                            <option value="grass-seeding">Grass Seeding</option>
+                            <option value="fertilizer">Fertilizer</option>
+                        </select>
+                        <button class="btn btn-primary" id="uploadImageBtn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
@@ -161,6 +171,7 @@
                         </svg>
                         Upload Image
                     </button>
+                    </div>
                 </div>
 
                 <div class="upload-form" id="uploadForm" style="display: none;">
@@ -168,6 +179,18 @@
                         <div class="form-group">
                             <label for="imageFile">Select Image</label>
                             <input type="file" id="imageFile" name="image" accept="image/*" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="imageCategory">Category *</label>
+                            <select id="imageCategory" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="residential-mowing">Residential Lawn Mowing</option>
+                                <option value="commercial-maintenance">Commercial Lawn Maintenance</option>
+                                <option value="trimming">Trimming</option>
+                                <option value="seasonal-cleanup">Seasonal Cleanup</option>
+                                <option value="grass-seeding">Grass Seeding</option>
+                                <option value="fertilizer">Fertilizer</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="imageTitle">Image Title</label>

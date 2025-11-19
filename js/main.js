@@ -238,13 +238,24 @@ animateOnScroll.forEach(el => {
 // ===================================
 // Gallery - Load Images from Server
 // ===================================
-async function loadGalleryImages() {
+let currentCategory = 'all';
+
+async function loadGalleryImages(category = 'all') {
     const galleryGrid = document.getElementById('galleryGrid');
 
     if (!galleryGrid) return;
 
+    currentCategory = category;
+
+    // Show loading state
+    galleryGrid.innerHTML = '<div class="gallery-loading"><p>Loading gallery...</p></div>';
+
     try {
-        const response = await fetch('http://localhost:3001/api/gallery');
+        const url = category === 'all'
+            ? 'http://localhost:3001/api/gallery'
+            : `http://localhost:3001/api/gallery?category=${category}`;
+
+        const response = await fetch(url);
         const data = await response.json();
 
         if (data.success && data.images && data.images.length > 0) {
@@ -319,6 +330,25 @@ function addGalleryClickHandlers() {
     });
 }
 
+// Gallery tab handlers
+function initializeGalleryTabs() {
+    const tabs = document.querySelectorAll('.gallery-tab');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+
+            // Add active class to clicked tab
+            tab.classList.add('active');
+
+            // Load images for selected category
+            const category = tab.dataset.category;
+            loadGalleryImages(category);
+        });
+    });
+}
+
 // ===================================
 // Active Navigation Link on Scroll
 // ===================================
@@ -381,8 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add any initialization code here
     setActiveNavLink();
 
+    // Initialize gallery tabs
+    initializeGalleryTabs();
+
     // Load gallery images from server
-    loadGalleryImages();
+    loadGalleryImages('all');
 
     // Add loading animation complete
     document.body.style.opacity = '0';

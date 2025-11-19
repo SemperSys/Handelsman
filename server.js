@@ -92,6 +92,13 @@ function writeGalleryData(data) {
 // Get all gallery images
 app.get('/api/gallery', (req, res) => {
     const images = readGalleryData();
+    const category = req.query.category;
+
+    if (category && category !== 'all') {
+        const filteredImages = images.filter(img => img.category === category);
+        return res.json({ success: true, images: filteredImages });
+    }
+
     res.json({ success: true, images });
 });
 
@@ -112,7 +119,7 @@ app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
             });
         }
 
-        const { title, description } = req.body;
+        const { title, description, category } = req.body;
 
         if (!title) {
             // Delete the uploaded file if title is missing
@@ -120,6 +127,15 @@ app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Title is required'
+            });
+        }
+
+        if (!category) {
+            // Delete the uploaded file if category is missing
+            fs.unlinkSync(req.file.path);
+            return res.status(400).json({
+                success: false,
+                message: 'Category is required'
             });
         }
 
@@ -131,6 +147,7 @@ app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
             url: `/uploads/${req.file.filename}`,
             title: title,
             description: description || '',
+            category: category,
             size: req.file.size,
             uploadedAt: new Date().toISOString()
         };

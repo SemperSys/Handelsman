@@ -461,6 +461,17 @@ body {
     margin-bottom: 12px;
 }
 
+.category-badge {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 8px 0;
+}
+
 .gallery-item-actions {
     display: flex;
     gap: 8px;

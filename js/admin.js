@@ -130,6 +130,12 @@ function setupEventListeners() {
         imageUploadForm.addEventListener('submit', handleImageUpload);
     }
 
+    // Category filter
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', filterGalleryByCategory);
+    }
+
     // Settings forms
     const passwordForm = document.getElementById('passwordForm');
     if (passwordForm) {
@@ -320,10 +326,11 @@ function renderGallery() {
     }
 
     container.innerHTML = galleryImages.map((img, index) => `
-        <div class="gallery-item-admin">
+        <div class="gallery-item-admin" data-category="${img.category || 'uncategorized'}">
             <img src="${img.url}" alt="${escapeHtml(img.title)}">
             <div class="gallery-item-info">
                 <h4>${escapeHtml(img.title)}</h4>
+                ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
                 <p>${escapeHtml(img.description || '')}</p>
                 <div class="gallery-item-actions">
                     <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
@@ -331,6 +338,31 @@ function renderGallery() {
             </div>
         </div>
     `).join('');
+}
+
+function filterGalleryByCategory() {
+    const filterValue = document.getElementById('categoryFilter').value;
+    const galleryItems = document.querySelectorAll('.gallery-item-admin');
+
+    galleryItems.forEach(item => {
+        if (filterValue === 'all' || item.dataset.category === filterValue) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function getCategoryLabel(category) {
+    const labels = {
+        'residential-mowing': 'Residential Lawn Mowing',
+        'commercial-maintenance': 'Commercial Lawn Maintenance',
+        'trimming': 'Trimming',
+        'seasonal-cleanup': 'Seasonal Cleanup',
+        'grass-seeding': 'Grass Seeding',
+        'fertilizer': 'Fertilizer'
+    };
+    return labels[category] || category;
 }
 
 function toggleUploadForm() {
@@ -342,11 +374,17 @@ async function handleImageUpload(e) {
     e.preventDefault();
 
     const fileInput = document.getElementById('imageFile');
+    const category = document.getElementById('imageCategory').value;
     const title = document.getElementById('imageTitle').value;
     const description = document.getElementById('imageDescription').value;
 
     if (!fileInput.files || !fileInput.files[0]) {
         showNotification('Please select an image', 'error');
+        return;
+    }
+
+    if (!category) {
+        showNotification('Please select a category', 'error');
         return;
     }
 
@@ -368,6 +406,7 @@ async function handleImageUpload(e) {
     // Create FormData
     const formData = new FormData();
     formData.append('image', file);
+    formData.append('category', category);
     formData.append('title', title);
     formData.append('description', description);
 
