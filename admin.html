@@ -175,6 +175,13 @@
                 </div>
 
                 <div class="upload-form" id="uploadForm" style="display: none;">
+                    <!-- Upload Type Toggle -->
+                    <div class="upload-type-toggle">
+                        <button type="button" class="toggle-btn active" id="singleUploadBtn" onclick="setUploadType('single')">Single Image</button>
+                        <button type="button" class="toggle-btn" id="beforeAfterUploadBtn" onclick="setUploadType('before-after')">Before & After</button>
+                    </div>
+
+                    <!-- Single Image Upload Form -->
                     <form id="imageUploadForm" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="imageFile">Select Image</label>
@@ -203,6 +210,46 @@
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Upload</button>
                             <button type="button" class="btn btn-secondary" id="cancelUpload">Cancel</button>
+                        </div>
+                    </form>
+
+                    <!-- Before/After Image Upload Form -->
+                    <form id="beforeAfterUploadForm" enctype="multipart/form-data" style="display: none;">
+                        <div class="before-after-upload-grid">
+                            <div class="form-group">
+                                <label for="beforeImageFile">Before Image *</label>
+                                <input type="file" id="beforeImageFile" name="beforeImage" accept="image/*" required>
+                                <div class="image-preview" id="beforePreview"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="afterImageFile">After Image *</label>
+                                <input type="file" id="afterImageFile" name="afterImage" accept="image/*" required>
+                                <div class="image-preview" id="afterPreview"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="beforeAfterCategory">Category *</label>
+                            <select id="beforeAfterCategory" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="residential-mowing">Residential Lawn Mowing</option>
+                                <option value="commercial-maintenance">Commercial Lawn Maintenance</option>
+                                <option value="trimming">Trimming</option>
+                                <option value="seasonal-cleanup">Seasonal Cleanup</option>
+                                <option value="grass-seeding">Grass Seeding</option>
+                                <option value="fertilizer">Fertilizer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="beforeAfterTitle">Title *</label>
+                            <input type="text" id="beforeAfterTitle" name="title" placeholder="e.g., Residential Lawn Transformation" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="beforeAfterDescription">Description</label>
+                            <input type="text" id="beforeAfterDescription" name="description" placeholder="Describe the work done...">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Upload Before & After</button>
+                            <button type="button" class="btn btn-secondary" id="cancelBeforeAfterUpload">Cancel</button>
                         </div>
                     </form>
                 </div>

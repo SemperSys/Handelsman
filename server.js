@@ -51,6 +51,18 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
+// Multer for before/after image pairs
+const uploadBeforeAfter = multer({
+    storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB max file size
+    },
+    fileFilter: fileFilter
+}).fields([
+    { name: 'beforeImage', maxCount: 1 },
+    { name: 'afterImage', maxCount: 1 }
+]);
+
 // Gallery data file
 const galleryDataFile = path.join(__dirname, 'data', 'gallery.json');
 
@@ -172,6 +184,107 @@ app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
     }
 });
 
+// Upload before/after image pair
+app.post('/api/gallery/upload-before-after', (req, res) => {
+    uploadBeforeAfter(req, res, function(err) {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({
+                success: false,
+                message: err.code === 'LIMIT_FILE_SIZE' ? 'File is too large. Maximum size is 10MB.' : err.message
+            });
+        } else if (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        try {
+            if (req.fileValidationError) {
+                return res.status(400).json({
+                    success: false,
+                    message: req.fileValidationError
+                });
+            }
+
+            if (!req.files || !req.files.beforeImage || !req.files.afterImage) {
+                // Clean up any uploaded files
+                if (req.files) {
+                    if (req.files.beforeImage) fs.unlinkSync(req.files.beforeImage[0].path);
+                    if (req.files.afterImage) fs.unlinkSync(req.files.afterImage[0].path);
+                }
+                return res.status(400).json({
+                    success: false,
+                    message: 'Both before and after images are required'
+                });
+            }
+
+            const { title, description, category } = req.body;
+
+            if (!title) {
+                fs.unlinkSync(req.files.beforeImage[0].path);
+                fs.unlinkSync(req.files.afterImage[0].path);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Title is required'
+                });
+            }
+
+            if (!category) {
+                fs.unlinkSync(req.files.beforeImage[0].path);
+                fs.unlinkSync(req.files.afterImage[0].path);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Category is required'
+                });
+            }
+
+            const beforeFile = req.files.beforeImage[0];
+            const afterFile = req.files.afterImage[0];
+
+            // Create image data for before/after pair
+            const imageData = {
+                id: Date.now().toString(),
+                type: 'before-after',
+                beforeImage: {
+                    filename: beforeFile.filename,
+                    originalName: beforeFile.originalname,
+                    url: `/uploads/${beforeFile.filename}`,
+                    size: beforeFile.size
+                },
+                afterImage: {
+                    filename: afterFile.filename,
+                    originalName: afterFile.originalname,
+                    url: `/uploads/${afterFile.filename}`,
+                    size: afterFile.size
+                },
+                title: title,
+                description: description || '',
+                category: category,
+                uploadedAt: new Date().toISOString()
+            };
+
+            // Add to gallery data
+            const images = readGalleryData();
+            images.push(imageData);
+            writeGalleryData(images);
+
+            res.json({
+                success: true,
+                message: 'Before/After images uploaded successfully',
+                image: imageData
+            });
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error uploading files: ' + error.message
+            });
+        }
+    });
+});
+
 // Delete image
 app.delete('/api/gallery/:id', (req, res) => {
     try {
@@ -188,10 +301,19 @@ app.delete('/api/gallery/:id', (req, res) => {
 
         const image = images[imageIndex];
 
-        // Delete the physical file
-        const filePath = path.join(__dirname, 'uploads', image.filename);
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+        // Delete the physical file(s)
+        if (image.type === 'before-after') {
+            // Delete both before and after images
+            const beforePath = path.join(__dirname, 'uploads', image.beforeImage.filename);
+            const afterPath = path.join(__dirname, 'uploads', image.afterImage.filename);
+            if (fs.existsSync(beforePath)) fs.unlinkSync(beforePath);
+            if (fs.existsSync(afterPath)) fs.unlinkSync(afterPath);
+        } else {
+            // Delete single image
+            const filePath = path.join(__dirname, 'uploads', image.filename);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
         }
 
         // Remove from data

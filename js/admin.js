@@ -130,6 +130,21 @@ function setupEventListeners() {
         imageUploadForm.addEventListener('submit', handleImageUpload);
     }
 
+    // Before/After upload form
+    const beforeAfterUploadForm = document.getElementById('beforeAfterUploadForm');
+    if (beforeAfterUploadForm) {
+        beforeAfterUploadForm.addEventListener('submit', handleBeforeAfterUpload);
+    }
+
+    // Cancel Before/After upload
+    const cancelBeforeAfterUpload = document.getElementById('cancelBeforeAfterUpload');
+    if (cancelBeforeAfterUpload) {
+        cancelBeforeAfterUpload.addEventListener('click', toggleUploadForm);
+    }
+
+    // Setup image previews for before/after uploads
+    setupImagePreviews();
+
     // Category filter
     const categoryFilter = document.getElementById('categoryFilter');
     if (categoryFilter) {
@@ -297,6 +312,32 @@ function updateQuoteCount() {
     }
 }
 
+// Upload type management
+let currentUploadType = 'single';
+
+function setUploadType(type) {
+    currentUploadType = type;
+    const singleBtn = document.getElementById('singleUploadBtn');
+    const beforeAfterBtn = document.getElementById('beforeAfterUploadBtn');
+    const singleForm = document.getElementById('imageUploadForm');
+    const beforeAfterForm = document.getElementById('beforeAfterUploadForm');
+
+    if (type === 'single') {
+        singleBtn.classList.add('active');
+        beforeAfterBtn.classList.remove('active');
+        singleForm.style.display = 'block';
+        beforeAfterForm.style.display = 'none';
+    } else {
+        singleBtn.classList.remove('active');
+        beforeAfterBtn.classList.add('active');
+        singleForm.style.display = 'none';
+        beforeAfterForm.style.display = 'block';
+    }
+}
+
+// Make setUploadType globally available
+window.setUploadType = setUploadType;
+
 // Gallery Management
 async function loadGalleryImages() {
     try {
@@ -325,19 +366,47 @@ function renderGallery() {
         return;
     }
 
-    container.innerHTML = galleryImages.map((img, index) => `
-        <div class="gallery-item-admin" data-category="${img.category || 'uncategorized'}">
-            <img src="${img.url}" alt="${escapeHtml(img.title)}">
-            <div class="gallery-item-info">
-                <h4>${escapeHtml(img.title)}</h4>
-                ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
-                <p>${escapeHtml(img.description || '')}</p>
-                <div class="gallery-item-actions">
-                    <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
+    container.innerHTML = galleryImages.map((img, index) => {
+        if (img.type === 'before-after') {
+            return `
+                <div class="gallery-item-admin before-after-item" data-category="${img.category || 'uncategorized'}">
+                    <div class="before-after-badge">Before & After</div>
+                    <div class="before-after-preview">
+                        <div class="before-preview-img">
+                            <span class="preview-label">Before</span>
+                            <img src="${img.beforeImage.url}" alt="Before - ${escapeHtml(img.title)}">
+                        </div>
+                        <div class="after-preview-img">
+                            <span class="preview-label">After</span>
+                            <img src="${img.afterImage.url}" alt="After - ${escapeHtml(img.title)}">
+                        </div>
+                    </div>
+                    <div class="gallery-item-info">
+                        <h4>${escapeHtml(img.title)}</h4>
+                        ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
+                        <p>${escapeHtml(img.description || '')}</p>
+                        <div class="gallery-item-actions">
+                            <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    `).join('');
+            `;
+        } else {
+            return `
+                <div class="gallery-item-admin" data-category="${img.category || 'uncategorized'}">
+                    <img src="${img.url}" alt="${escapeHtml(img.title)}">
+                    <div class="gallery-item-info">
+                        <h4>${escapeHtml(img.title)}</h4>
+                        ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
+                        <p>${escapeHtml(img.description || '')}</p>
+                        <div class="gallery-item-actions">
+                            <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }).join('');
 }
 
 function filterGalleryByCategory() {
@@ -466,6 +535,119 @@ async function deleteGalleryImage(index) {
     } catch (error) {
         console.error('Delete error:', error);
         showNotification('Error deleting image. Make sure the server is running.', 'error');
+    }
+}
+
+// Handle Before/After Image Upload
+async function handleBeforeAfterUpload(e) {
+    e.preventDefault();
+
+    const beforeFileInput = document.getElementById('beforeImageFile');
+    const afterFileInput = document.getElementById('afterImageFile');
+    const category = document.getElementById('beforeAfterCategory').value;
+    const title = document.getElementById('beforeAfterTitle').value;
+    const description = document.getElementById('beforeAfterDescription').value;
+
+    if (!beforeFileInput.files || !beforeFileInput.files[0]) {
+        showNotification('Please select a before image', 'error');
+        return;
+    }
+
+    if (!afterFileInput.files || !afterFileInput.files[0]) {
+        showNotification('Please select an after image', 'error');
+        return;
+    }
+
+    if (!category) {
+        showNotification('Please select a category', 'error');
+        return;
+    }
+
+    if (!title) {
+        showNotification('Please enter a title', 'error');
+        return;
+    }
+
+    const beforeFile = beforeFileInput.files[0];
+    const afterFile = afterFileInput.files[0];
+
+    // Validate file sizes (10MB)
+    if (beforeFile.size > 10 * 1024 * 1024 || afterFile.size > 10 * 1024 * 1024) {
+        showNotification('Files are too large. Maximum size is 10MB each.', 'error');
+        return;
+    }
+
+    // Validate file types
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(beforeFile.type) || !validTypes.includes(afterFile.type)) {
+        showNotification('Please select valid image files (JPG, PNG, GIF, or WebP)', 'error');
+        return;
+    }
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append('beforeImage', beforeFile);
+    formData.append('afterImage', afterFile);
+    formData.append('category', category);
+    formData.append('title', title);
+    formData.append('description', description);
+
+    try {
+        showNotification('Uploading before/after images...', 'info');
+
+        const response = await fetch('http://localhost:3001/api/gallery/upload-before-after', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showNotification('Before/After images uploaded successfully!', 'success');
+            await loadGalleryImages(); // Reload gallery
+            toggleUploadForm();
+            document.getElementById('beforeAfterUploadForm').reset();
+            // Clear previews
+            document.getElementById('beforePreview').innerHTML = '';
+            document.getElementById('afterPreview').innerHTML = '';
+        } else {
+            showNotification(data.message || 'Failed to upload images', 'error');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        showNotification('Error uploading images. Make sure the server is running.', 'error');
+    }
+}
+
+// Image preview for before/after uploads
+function setupImagePreviews() {
+    const beforeInput = document.getElementById('beforeImageFile');
+    const afterInput = document.getElementById('afterImageFile');
+    const beforePreview = document.getElementById('beforePreview');
+    const afterPreview = document.getElementById('afterPreview');
+
+    if (beforeInput) {
+        beforeInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    beforePreview.innerHTML = `<img src="${event.target.result}" alt="Before Preview">`;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    }
+
+    if (afterInput) {
+        afterInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    afterPreview.innerHTML = `<img src="${event.target.result}" alt="After Preview">`;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
     }
 }
 
