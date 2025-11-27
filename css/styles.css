@@ -1611,3 +1611,224 @@ section {
         text-align: center;
     }
 }
+
+/* ===================================
+   Gallery Category Page Styles
+   =================================== */
+
+.header-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--background-white);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-page {
+    padding-top: 120px;
+    min-height: 100vh;
+    background-color: var(--background-light);
+}
+
+/* Gallery tabs as links */
+.gallery-tabs a.gallery-tab {
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* Breadcrumb */
+.gallery-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.gallery-breadcrumb a {
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+.gallery-breadcrumb a:hover {
+    color: var(--primary-green);
+}
+
+.breadcrumb-separator {
+    color: var(--border-color);
+}
+
+.breadcrumb-current {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+/* Gallery Page Header */
+.gallery-page-header {
+    margin-bottom: 3rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-green);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    transition: var(--transition-smooth);
+}
+
+.back-link:hover {
+    color: var(--fresh-green);
+    transform: translateX(-4px);
+}
+
+.back-link svg {
+    transition: var(--transition-smooth);
+}
+
+.back-link:hover svg {
+    transform: translateX(-4px);
+}
+
+.gallery-page-title {
+    font-family: var(--font-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.gallery-page-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-light);
+}
+
+/* Gallery Page Grid */
+.gallery-page-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    padding-bottom: 4rem;
+}
+
+.gallery-page-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    aspect-ratio: 4/3;
+    background: var(--background-white);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.gallery-page-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-page-item .gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition-smooth);
+}
+
+.gallery-page-item:hover .gallery-image {
+    transform: scale(1.05);
+}
+
+.gallery-page-item .gallery-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(45, 80, 22, 0.8), transparent 60%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.gallery-page-item:hover .gallery-overlay {
+    opacity: 1;
+}
+
+/* Gallery Empty State */
+.gallery-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    color: var(--text-light);
+    padding: 4rem 2rem;
+}
+
+.gallery-empty svg {
+    margin-bottom: 1.5rem;
+    opacity: 0.4;
+}
+
+.gallery-empty h3 {
+    font-family: var(--font-primary);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.gallery-empty p {
+    margin-bottom: 2rem;
+}
+
+.gallery-error {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-light);
+}
+
+/* Gallery Page Responsive */
+@media (max-width: 768px) {
+    .gallery-page {
+        padding-top: 100px;
+    }
+
+    .gallery-page-title {
+        font-size: 1.8rem;
+    }
+
+    .gallery-page-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .gallery-breadcrumb {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery-page-header {
+        margin-bottom: 2rem;
+    }
+
+    .gallery-page-title {
+        font-size: 1.5rem;
+    }
+
+    .gallery-page-subtitle {
+        font-size: 1rem;
+    }
+}

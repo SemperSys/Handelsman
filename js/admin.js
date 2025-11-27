@@ -374,17 +374,15 @@ function renderGallery() {
                     <div class="before-after-preview">
                         <div class="before-preview-img">
                             <span class="preview-label">Before</span>
-                            <img src="${img.beforeImage.url}" alt="Before - ${escapeHtml(img.title)}">
+                            <img src="${img.beforeImage.url}" alt="Before">
                         </div>
                         <div class="after-preview-img">
                             <span class="preview-label">After</span>
-                            <img src="${img.afterImage.url}" alt="After - ${escapeHtml(img.title)}">
+                            <img src="${img.afterImage.url}" alt="After">
                         </div>
                     </div>
                     <div class="gallery-item-info">
-                        <h4>${escapeHtml(img.title)}</h4>
                         ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
-                        <p>${escapeHtml(img.description || '')}</p>
                         <div class="gallery-item-actions">
                             <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
                         </div>
@@ -394,11 +392,9 @@ function renderGallery() {
         } else {
             return `
                 <div class="gallery-item-admin" data-category="${img.category || 'uncategorized'}">
-                    <img src="${img.url}" alt="${escapeHtml(img.title)}">
+                    <img src="${img.url}" alt="Gallery image">
                     <div class="gallery-item-info">
-                        <h4>${escapeHtml(img.title)}</h4>
                         ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
-                        <p>${escapeHtml(img.description || '')}</p>
                         <div class="gallery-item-actions">
                             <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
                         </div>
@@ -427,9 +423,7 @@ function getCategoryLabel(category) {
         'residential-mowing': 'Residential Lawn Mowing',
         'commercial-maintenance': 'Commercial Lawn Maintenance',
         'trimming': 'Trimming',
-        'seasonal-cleanup': 'Seasonal Cleanup',
-        'grass-seeding': 'Grass Seeding',
-        'fertilizer': 'Fertilizer'
+        'seasonal-cleanup': 'Seasonal Cleanup'
     };
     return labels[category] || category;
 }
@@ -444,8 +438,6 @@ async function handleImageUpload(e) {
 
     const fileInput = document.getElementById('imageFile');
     const category = document.getElementById('imageCategory').value;
-    const title = document.getElementById('imageTitle').value;
-    const description = document.getElementById('imageDescription').value;
 
     if (!fileInput.files || !fileInput.files[0]) {
         showNotification('Please select an image', 'error');
@@ -476,8 +468,6 @@ async function handleImageUpload(e) {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('category', category);
-    formData.append('title', title);
-    formData.append('description', description);
 
     try {
         showNotification('Uploading image...', 'info');
@@ -545,8 +535,6 @@ async function handleBeforeAfterUpload(e) {
     const beforeFileInput = document.getElementById('beforeImageFile');
     const afterFileInput = document.getElementById('afterImageFile');
     const category = document.getElementById('beforeAfterCategory').value;
-    const title = document.getElementById('beforeAfterTitle').value;
-    const description = document.getElementById('beforeAfterDescription').value;
 
     if (!beforeFileInput.files || !beforeFileInput.files[0]) {
         showNotification('Please select a before image', 'error');
@@ -560,11 +548,6 @@ async function handleBeforeAfterUpload(e) {
 
     if (!category) {
         showNotification('Please select a category', 'error');
-        return;
-    }
-
-    if (!title) {
-        showNotification('Please enter a title', 'error');
         return;
     }
 
@@ -584,13 +567,32 @@ async function handleBeforeAfterUpload(e) {
         return;
     }
 
+    // Validate that both images have equal dimensions
+    try {
+        showNotification('Validating image dimensions...', 'info');
+        const [beforeDimensions, afterDimensions] = await Promise.all([
+            getImageDimensions(beforeFile),
+            getImageDimensions(afterFile)
+        ]);
+
+        if (beforeDimensions.width !== afterDimensions.width || beforeDimensions.height !== afterDimensions.height) {
+            showNotification(
+                `Image dimensions must match. Before image: ${beforeDimensions.width}x${beforeDimensions.height}, After image: ${afterDimensions.width}x${afterDimensions.height}`,
+                'error'
+            );
+            return;
+        }
+    } catch (error) {
+        console.error('Error validating image dimensions:', error);
+        showNotification('Error validating image dimensions. Please try again.', 'error');
+        return;
+    }
+
     // Create FormData
     const formData = new FormData();
     formData.append('beforeImage', beforeFile);
     formData.append('afterImage', afterFile);
     formData.append('category', category);
-    formData.append('title', title);
-    formData.append('description', description);
 
     try {
         showNotification('Uploading before/after images...', 'info');
@@ -617,6 +619,26 @@ async function handleBeforeAfterUpload(e) {
         console.error('Upload error:', error);
         showNotification('Error uploading images. Make sure the server is running.', 'error');
     }
+}
+
+// Helper function to get image dimensions from a file
+function getImageDimensions(file) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            resolve({ width: img.width, height: img.height });
+        };
+
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Failed to load image'));
+        };
+
+        img.src = url;
+    });
 }
 
 // Image preview for before/after uploads

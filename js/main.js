@@ -252,22 +252,42 @@ async function loadGalleryImages(category = 'all') {
     galleryGrid.innerHTML = '<div class="gallery-loading"><p>Loading gallery...</p></div>';
 
     try {
-        const url = category === 'all'
-            ? 'http://localhost:3001/api/gallery'
-            : `http://localhost:3001/api/gallery?category=${category}`;
+        // Always fetch all images to enable filtering
+        const url = 'http://localhost:3001/api/gallery';
 
         const response = await fetch(url);
         const data = await response.json();
 
         if (data.success && data.images && data.images.length > 0) {
+            let imagesToDisplay = data.images;
+
+            // For "All Work" category, show only one image from each category (max 4)
+            if (category === 'all') {
+                const categories = ['residential-mowing', 'commercial-maintenance', 'trimming', 'seasonal-cleanup'];
+                const selectedImages = [];
+
+                categories.forEach(cat => {
+                    const categoryImages = data.images.filter(img => img.category === cat);
+                    if (categoryImages.length > 0) {
+                        // Pick the first image from each category
+                        selectedImages.push(categoryImages[0]);
+                    }
+                });
+
+                imagesToDisplay = selectedImages;
+            } else {
+                // Filter by specific category
+                imagesToDisplay = data.images.filter(img => img.category === category);
+            }
+
             // Store images data for lightbox
-            galleryImagesData = data.images;
+            galleryImagesData = imagesToDisplay;
 
             // Clear loading message
             galleryGrid.innerHTML = '';
 
             // Render gallery items
-            data.images.forEach((image, index) => {
+            imagesToDisplay.forEach((image, index) => {
                 const galleryItem = document.createElement('div');
 
                 if (image.type === 'before-after') {
@@ -279,14 +299,14 @@ async function loadGalleryImages(category = 'all') {
                             <div class="before-after-slider">
                                 <div class="before-image-wrapper">
                                     <img src="http://localhost:3001${image.beforeImage.url}"
-                                         alt="Before - ${escapeHtml(image.title)}"
+                                         alt="Before"
                                          class="gallery-image before-img"
                                          onerror="this.src='images/placeholder.jpg'">
                                     <span class="image-label before-label">Before</span>
                                 </div>
                                 <div class="after-image-wrapper">
                                     <img src="http://localhost:3001${image.afterImage.url}"
-                                         alt="After - ${escapeHtml(image.title)}"
+                                         alt="After"
                                          class="gallery-image after-img"
                                          onerror="this.src='images/placeholder.jpg'">
                                     <span class="image-label after-label">After</span>
@@ -304,7 +324,6 @@ async function loadGalleryImages(category = 'all') {
                             </div>
                         </div>
                         <div class="gallery-overlay">
-                            <span>${escapeHtml(image.title)}</span>
                             <span class="overlay-badge">Before & After</span>
                         </div>
                     `;
@@ -314,11 +333,10 @@ async function loadGalleryImages(category = 'all') {
                     galleryItem.dataset.index = index;
                     galleryItem.innerHTML = `
                         <img src="http://localhost:3001${image.url}"
-                             alt="${escapeHtml(image.title)}"
+                             alt="Gallery image"
                              class="gallery-image"
                              onerror="this.src='images/placeholder.jpg'">
                         <div class="gallery-overlay">
-                            <span>${escapeHtml(image.title)}</span>
                         </div>
                     `;
                 }
@@ -459,7 +477,6 @@ function createLightbox() {
         <div class="lightbox-overlay"></div>
         <div class="lightbox-container">
             <div class="lightbox-header">
-                <span class="lightbox-title"></span>
                 <div class="lightbox-controls">
                     <button class="lightbox-btn zoom-out-btn" title="Zoom Out">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -507,7 +524,6 @@ function createLightbox() {
             </div>
             <div class="lightbox-footer">
                 <span class="lightbox-counter"></span>
-                <span class="lightbox-description"></span>
             </div>
         </div>
     `;
@@ -577,12 +593,8 @@ function updateLightboxContent() {
 
     const image = galleryImagesData[currentLightboxIndex];
     const imageWrapper = lightbox.querySelector('.lightbox-image-wrapper');
-    const title = lightbox.querySelector('.lightbox-title');
-    const description = lightbox.querySelector('.lightbox-description');
     const counter = lightbox.querySelector('.lightbox-counter');
 
-    title.textContent = image.title;
-    description.textContent = image.description || '';
     counter.textContent = `${currentLightboxIndex + 1} / ${galleryImagesData.length}`;
 
     if (image.type === 'before-after') {
@@ -590,11 +602,11 @@ function updateLightboxContent() {
             <div class="lightbox-before-after">
                 <div class="lightbox-before-after-slider">
                     <div class="lightbox-before-wrapper">
-                        <img src="http://localhost:3001${image.beforeImage.url}" alt="Before - ${escapeHtml(image.title)}">
+                        <img src="http://localhost:3001${image.beforeImage.url}" alt="Before">
                         <span class="lightbox-image-label before">Before</span>
                     </div>
                     <div class="lightbox-after-wrapper">
-                        <img src="http://localhost:3001${image.afterImage.url}" alt="After - ${escapeHtml(image.title)}">
+                        <img src="http://localhost:3001${image.afterImage.url}" alt="After">
                         <span class="lightbox-image-label after">After</span>
                     </div>
                     <div class="lightbox-slider-handle">
@@ -613,7 +625,7 @@ function updateLightboxContent() {
         initializeLightboxSlider();
     } else {
         imageWrapper.innerHTML = `
-            <img src="http://localhost:3001${image.url}" alt="${escapeHtml(image.title)}" class="lightbox-main-image">
+            <img src="http://localhost:3001${image.url}" alt="Gallery image" class="lightbox-main-image">
         `;
     }
 
@@ -773,23 +785,10 @@ function handleLightboxKeydown(e) {
     }
 }
 
-// Gallery tab handlers
+// Gallery tab handlers - tabs are now links to individual category pages
 function initializeGalleryTabs() {
-    const tabs = document.querySelectorAll('.gallery-tab');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove active class from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-
-            // Add active class to clicked tab
-            tab.classList.add('active');
-
-            // Load images for selected category
-            const category = tab.dataset.category;
-            loadGalleryImages(category);
-        });
-    });
+    // Gallery tabs are now <a> links that navigate to gallery.html?category=xxx
+    // No click handlers needed - they work as regular links
 }
 
 // ===================================

@@ -7,14 +7,12 @@ The gallery now has a complete category system with 6 service categories. You ca
 
 ## Categories
 
-The system includes these 6 categories:
+The system includes these 4 categories:
 
 1. **Residential Lawn Mowing** - Images of residential mowing work
 2. **Commercial Lawn Maintenance** - Commercial property maintenance
 3. **Trimming** - Hedge and shrub trimming work
 4. **Seasonal Cleanup** - Spring and fall cleanup projects
-5. **Grass Seeding** - Lawn seeding and restoration
-6. **Fertilizer** - Fertilization services
 
 ---
 
@@ -39,8 +37,6 @@ Click on **"Gallery Management"** in the navigation menu
      - Commercial Lawn Maintenance
      - Trimming
      - Seasonal Cleanup
-     - Grass Seeding
-     - Fertilizer
    - **Image Title**: Enter a descriptive title
    - **Description**: Add optional description
 3. Click **"Upload"**
@@ -62,7 +58,7 @@ The gallery section now has **category tabs** at the top:
 
 ```
 [ All Work ] [ Residential Mowing ] [ Commercial Maintenance ]
-[ Trimming ] [ Seasonal Cleanup ] [ Grass Seeding ] [ Fertilizer ]
+[ Trimming ] [ Seasonal Cleanup ]
 ```
 
 ### How It Works:
@@ -111,8 +107,6 @@ Images are stored with category information in `data/gallery.json`:
 - `commercial-maintenance`
 - `trimming`
 - `seasonal-cleanup`
-- `grass-seeding`
-- `fertilizer`
 
 ### API Endpoints
 
@@ -245,14 +239,14 @@ GET /api/gallery?category=residential-mowing
 ✅ Website displays category tabs
 ✅ Visitors can filter gallery by category
 ✅ Server API supports category filtering
-✅ All 6 categories available and working
+✅ All 4 categories available and working
 
 ---
 
 ## Next Steps
 
 You can now:
-1. **Upload images** for each of the 6 categories
+1. **Upload images** for each of the 4 categories
 2. **Organize your portfolio** by service type
 3. **Let visitors browse** your work by category
 4. **Build a comprehensive gallery** showcasing all your services
@@ -270,8 +264,6 @@ You can now:
 2. Commercial Lawn Maintenance
 3. Trimming
 4. Seasonal Cleanup
-5. Grass Seeding
-6. Fertilizer
 
 ### Required Fields:
 - Image file ✓

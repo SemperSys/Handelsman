@@ -131,16 +131,7 @@ app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
             });
         }
 
-        const { title, description, category } = req.body;
-
-        if (!title) {
-            // Delete the uploaded file if title is missing
-            fs.unlinkSync(req.file.path);
-            return res.status(400).json({
-                success: false,
-                message: 'Title is required'
-            });
-        }
+        const { category } = req.body;
 
         if (!category) {
             // Delete the uploaded file if category is missing
@@ -157,8 +148,6 @@ app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
             filename: req.file.filename,
             originalName: req.file.originalname,
             url: `/uploads/${req.file.filename}`,
-            title: title,
-            description: description || '',
             category: category,
             size: req.file.size,
             uploadedAt: new Date().toISOString()
@@ -219,16 +208,7 @@ app.post('/api/gallery/upload-before-after', (req, res) => {
                 });
             }
 
-            const { title, description, category } = req.body;
-
-            if (!title) {
-                fs.unlinkSync(req.files.beforeImage[0].path);
-                fs.unlinkSync(req.files.afterImage[0].path);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Title is required'
-                });
-            }
+            const { category } = req.body;
 
             if (!category) {
                 fs.unlinkSync(req.files.beforeImage[0].path);
@@ -258,8 +238,6 @@ app.post('/api/gallery/upload-before-after', (req, res) => {
                     url: `/uploads/${afterFile.filename}`,
                     size: afterFile.size
                 },
-                title: title,
-                description: description || '',
                 category: category,
                 uploadedAt: new Date().toISOString()
             };
