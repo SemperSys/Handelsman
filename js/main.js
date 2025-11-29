@@ -259,26 +259,8 @@ async function loadGalleryImages(category = 'all') {
         const data = await response.json();
 
         if (data.success && data.images && data.images.length > 0) {
-            let imagesToDisplay = data.images;
-
-            // For "All Work" category, show only one image from each category (max 4)
-            if (category === 'all') {
-                const categories = ['residential-mowing', 'commercial-maintenance', 'trimming', 'seasonal-cleanup'];
-                const selectedImages = [];
-
-                categories.forEach(cat => {
-                    const categoryImages = data.images.filter(img => img.category === cat);
-                    if (categoryImages.length > 0) {
-                        // Pick the first image from each category
-                        selectedImages.push(categoryImages[0]);
-                    }
-                });
-
-                imagesToDisplay = selectedImages;
-            } else {
-                // Filter by specific category
-                imagesToDisplay = data.images.filter(img => img.category === category);
-            }
+            // Display all images (limited to first 4 for homepage preview)
+            let imagesToDisplay = data.images.slice(0, 4);
 
             // Store images data for lightbox
             galleryImagesData = imagesToDisplay;

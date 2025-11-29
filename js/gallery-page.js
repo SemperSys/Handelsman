@@ -2,19 +2,11 @@
 
 // Category labels mapping
 const categoryLabels = {
-    'all': 'All Work',
-    'residential-mowing': 'Residential Mowing',
-    'commercial-maintenance': 'Commercial Maintenance',
-    'trimming': 'Trimming',
-    'seasonal-cleanup': 'Seasonal Cleanup'
+    'all': 'All Work'
 };
 
 const categoryDescriptions = {
-    'all': 'Browse all our professional lawn care work',
-    'residential-mowing': 'Professional residential lawn mowing services',
-    'commercial-maintenance': 'Commercial property lawn maintenance',
-    'trimming': 'Expert hedge and shrub trimming services',
-    'seasonal-cleanup': 'Spring and fall cleanup projects'
+    'all': 'Browse all our professional lawn care work'
 };
 
 // Gallery images data for lightbox

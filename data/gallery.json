@@ -1,0 +1,274 @@
+[
+  {
+    "id": "1764081941192",
+    "filename": "1764081941178-512061861.jpg",
+    "originalName": "shawnee_pic3[1].jpg",
+    "url": "/uploads/1764081941178-512061861.jpg",
+    "title": "Home Backyard Lawn Cleanup",
+    "description": "",
+    "category": "residential-mowing",
+    "size": 439455,
+    "uploadedAt": "2025-11-25T14:45:41.192Z"
+  },
+  {
+    "id": "1764123472110",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764123472084-467104688.jpg",
+      "originalName": "pierre pic1.jpg",
+      "url": "/uploads/1764123472084-467104688.jpg",
+      "size": 336028
+    },
+    "afterImage": {
+      "filename": "1764123472096-331630193.jpg",
+      "originalName": "pierre pic4.jpg",
+      "url": "/uploads/1764123472096-331630193.jpg",
+      "size": 308993
+    },
+    "category": "residential-mowing",
+    "uploadedAt": "2025-11-26T02:17:52.110Z"
+  },
+  {
+    "id": "1764124194899",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764124194883-46517153.jpg",
+      "originalName": "pierre pic3.jpg",
+      "url": "/uploads/1764124194883-46517153.jpg",
+      "size": 319818
+    },
+    "afterImage": {
+      "filename": "1764124194890-514032824.jpg",
+      "originalName": "pierre pic2.jpg",
+      "url": "/uploads/1764124194890-514032824.jpg",
+      "size": 353360
+    },
+    "category": "residential-mowing",
+    "uploadedAt": "2025-11-26T02:29:54.899Z"
+  },
+  {
+    "id": "1764124585686",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764124585611-207795350.jpg",
+      "originalName": "bruce pic1.jpg",
+      "url": "/uploads/1764124585611-207795350.jpg",
+      "size": 2118070
+    },
+    "afterImage": {
+      "filename": "1764124585644-53051320.jpg",
+      "originalName": "bruce pic2.jpg",
+      "url": "/uploads/1764124585644-53051320.jpg",
+      "size": 2509876
+    },
+    "category": "residential-mowing",
+    "uploadedAt": "2025-11-26T02:36:25.686Z"
+  },
+  {
+    "id": "1764150106891",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764150106858-193434003.jpg",
+      "originalName": "shawnee pic1.jpg",
+      "url": "/uploads/1764150106858-193434003.jpg",
+      "size": 292239
+    },
+    "afterImage": {
+      "filename": "1764150106874-561130473.jpg",
+      "originalName": "shawnee pic7.jpg",
+      "url": "/uploads/1764150106874-561130473.jpg",
+      "size": 464116
+    },
+    "category": "residential-mowing",
+    "uploadedAt": "2025-11-26T09:41:46.891Z"
+  },
+  {
+    "id": "1764150359659",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764150359634-356202471.jpg",
+      "originalName": "shawnee pic9.jpg",
+      "url": "/uploads/1764150359634-356202471.jpg",
+      "size": 658577
+    },
+    "afterImage": {
+      "filename": "1764150359648-265222620.jpg",
+      "originalName": "shawnee pic4.jpg",
+      "url": "/uploads/1764150359648-265222620.jpg",
+      "size": 492196
+    },
+    "category": "residential-mowing",
+    "uploadedAt": "2025-11-26T09:45:59.659Z"
+  },
+  {
+    "id": "1764150604333",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764150604307-749829966.jpg",
+      "originalName": "shawnee pic2.jpg",
+      "url": "/uploads/1764150604307-749829966.jpg",
+      "size": 610861
+    },
+    "afterImage": {
+      "filename": "1764150604321-715138232.jpg",
+      "originalName": "shawnee pic6.jpg",
+      "url": "/uploads/1764150604321-715138232.jpg",
+      "size": 588299
+    },
+    "category": "residential-mowing",
+    "uploadedAt": "2025-11-26T09:50:04.333Z"
+  },
+  {
+    "id": "1764153641918",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764153641812-294791253.jpg",
+      "originalName": "1411 bruce pic2.jpg",
+      "url": "/uploads/1764153641812-294791253.jpg",
+      "size": 3648897
+    },
+    "afterImage": {
+      "filename": "1764153641871-248333665.jpg",
+      "originalName": "1411 bruce pic1.jpg",
+      "url": "/uploads/1764153641871-248333665.jpg",
+      "size": 2578622
+    },
+    "category": "residential-mowing",
+    "uploadedAt": "2025-11-26T10:40:41.918Z"
+  },
+  {
+    "id": "1764157400239",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764157400201-581469402.jpg",
+      "originalName": "grass8 (1).jpg",
+      "url": "/uploads/1764157400201-581469402.jpg",
+      "size": 784834
+    },
+    "afterImage": {
+      "filename": "1764157400223-868362600.jpg",
+      "originalName": "grass8.jpg",
+      "url": "/uploads/1764157400223-868362600.jpg",
+      "size": 685626
+    },
+    "category": "seasonal-cleanup",
+    "uploadedAt": "2025-11-26T11:43:20.239Z"
+  },
+  {
+    "id": "1764159633116",
+    "type": "before-after",
+    "beforeImage": {
+      "filename": "1764159633086-359319814.jpg",
+      "originalName": "grass7.jpg",
+      "url": "/uploads/1764159633086-359319814.jpg",
+      "size": 656320
+    },
+    "afterImage": {
+      "filename": "1764159633104-869399471.jpg",
+      "originalName": "grass7 (1).jpg",
+      "url": "/uploads/1764159633104-869399471.jpg",
+      "size": 616551
+    },
+    "category": "seasonal-cleanup",
+    "uploadedAt": "2025-11-26T12:20:33.116Z"
+  },
+  {
+    "id": "1764160525958",
+    "filename": "1764160525935-178931315.jpg",
+    "originalName": "grass img1.jpg",
+    "url": "/uploads/1764160525935-178931315.jpg",
+    "category": "commercial-maintenance",
+    "size": 1887771,
+    "uploadedAt": "2025-11-26T12:35:25.958Z"
+  },
+  {
+    "id": "1764160606801",
+    "filename": "1764160606783-363072596.jpg",
+    "originalName": "grass img2.jpg",
+    "url": "/uploads/1764160606783-363072596.jpg",
+    "category": "commercial-maintenance",
+    "size": 1391108,
+    "uploadedAt": "2025-11-26T12:36:46.801Z"
+  },
+  {
+    "id": "1764160660674",
+    "filename": "1764160660648-807620734.jpg",
+    "originalName": "grass img3.jpg",
+    "url": "/uploads/1764160660648-807620734.jpg",
+    "category": "commercial-maintenance",
+    "size": 1624534,
+    "uploadedAt": "2025-11-26T12:37:40.674Z"
+  },
+  {
+    "id": "1764161145610",
+    "filename": "1764161145594-573187351.jpg",
+    "originalName": "grass3.jpg",
+    "url": "/uploads/1764161145594-573187351.jpg",
+    "category": "commercial-maintenance",
+    "size": 1156763,
+    "uploadedAt": "2025-11-26T12:45:45.610Z"
+  },
+  {
+    "id": "1764161171268",
+    "filename": "1764161171249-598087403.jpg",
+    "originalName": "grass4.jpg",
+    "url": "/uploads/1764161171249-598087403.jpg",
+    "category": "commercial-maintenance",
+    "size": 1541956,
+    "uploadedAt": "2025-11-26T12:46:11.269Z"
+  },
+  {
+    "id": "1764161507180",
+    "filename": "1764161507157-747108613.jpg",
+    "originalName": "grass2.jpg",
+    "url": "/uploads/1764161507157-747108613.jpg",
+    "category": "commercial-maintenance",
+    "size": 1604621,
+    "uploadedAt": "2025-11-26T12:51:47.180Z"
+  },
+  {
+    "id": "1764161809667",
+    "filename": "1764161809643-141277428.jpg",
+    "originalName": "grass10.jpg",
+    "url": "/uploads/1764161809643-141277428.jpg",
+    "category": "trimming",
+    "size": 1573240,
+    "uploadedAt": "2025-11-26T12:56:49.667Z"
+  },
+  {
+    "id": "1764161833034",
+    "filename": "1764161833015-716216346.jpg",
+    "originalName": "grass6.jpg",
+    "url": "/uploads/1764161833015-716216346.jpg",
+    "category": "trimming",
+    "size": 1591550,
+    "uploadedAt": "2025-11-26T12:57:13.034Z"
+  },
+  {
+    "id": "1764161859234",
+    "filename": "1764161859193-807202621.jpg",
+    "originalName": "grass9.jpg",
+    "url": "/uploads/1764161859193-807202621.jpg",
+    "category": "trimming",
+    "size": 1299808,
+    "uploadedAt": "2025-11-26T12:57:39.234Z"
+  },
+  {
+    "id": "1764162196851",
+    "filename": "1764162196828-976064622.jpg",
+    "originalName": "grass5.jpg",
+    "url": "/uploads/1764162196828-976064622.jpg",
+    "category": "trimming",
+    "size": 1508039,
+    "uploadedAt": "2025-11-26T13:03:16.851Z"
+  },
+  {
+    "id": "1764162212871",
+    "filename": "1764162212845-33658892.jpg",
+    "originalName": "grass1.jpg",
+    "url": "/uploads/1764162212845-33658892.jpg",
+    "category": "trimming",
+    "size": 1406100,
+    "uploadedAt": "2025-11-26T13:03:32.871Z"
+  }
+]

@@ -419,13 +419,7 @@ function filterGalleryByCategory() {
 }
 
 function getCategoryLabel(category) {
-    const labels = {
-        'residential-mowing': 'Residential Lawn Mowing',
-        'commercial-maintenance': 'Commercial Lawn Maintenance',
-        'trimming': 'Trimming',
-        'seasonal-cleanup': 'Seasonal Cleanup'
-    };
-    return labels[category] || category;
+    return category || 'Uncategorized';
 }
 
 function toggleUploadForm() {
@@ -744,14 +738,7 @@ function getPropertySizeLabel(size) {
 }
 
 function getServiceLabel(service) {
-    const labels = {
-        'mowing': 'Lawn Mowing',
-        'spring': 'Spring Cleanup',
-        'fall': 'Fall Cleanup',
-        'garden': 'Garden Maintenance',
-        'hedge': 'Hedge Trimming'
-    };
-    return labels[service] || service;
+    return service || 'Unknown';
 }
 
 function showNotification(message, type = 'info') {

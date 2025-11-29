@@ -1,4 +1,4 @@
-# Operating System Files
+ System Files
 .DS_Store
 .DS_Store?
 ._*
@@ -45,8 +45,3 @@ build/
 *.bak
 *.backup
 *backup/
-
-# Admin Portal Data
-data/
-uploads/*
-!uploads/.gitkeep
