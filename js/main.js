@@ -164,6 +164,20 @@ if (quoteForm) {
         });
         data.services = services;
 
+        // Add metadata
+        data.id = Date.now().toString();
+        data.timestamp = new Date().toISOString();
+        data.status = 'new';
+
+        // Save to localStorage for admin panel
+        try {
+            const existingQuotes = JSON.parse(localStorage.getItem('quote_requests') || '[]');
+            existingQuotes.push(data);
+            localStorage.setItem('quote_requests', JSON.stringify(existingQuotes));
+        } catch (error) {
+            console.error('Error saving quote:', error);
+        }
+
         // Log data (in production, this would send to a server)
         console.log('Quote Request:', data);
 
@@ -222,17 +236,542 @@ animateOnScroll.forEach(el => {
 });
 
 // ===================================
-// Gallery Image Modal (Optional Enhancement)
+// Gallery - Load Images from Server
 // ===================================
-const galleryItems = document.querySelectorAll('.gallery-item');
+let currentCategory = 'all';
+let galleryImagesData = [];
 
-galleryItems.forEach(item => {
-    item.addEventListener('click', () => {
-        // In production, you could add a lightbox/modal here
-        console.log('Gallery item clicked');
-        // Example: Open image in modal or full-screen view
+async function loadGalleryImages(category = 'all') {
+    const galleryGrid = document.getElementById('galleryGrid');
+
+    if (!galleryGrid) return;
+
+    currentCategory = category;
+
+    // Show loading state
+    galleryGrid.innerHTML = '<div class="gallery-loading"><p>Loading gallery...</p></div>';
+
+    try {
+        // Always fetch all images to enable filtering
+        const url = 'http://localhost:3001/api/gallery';
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.success && data.images && data.images.length > 0) {
+            // Display all images (limited to first 4 for homepage preview)
+            let imagesToDisplay = data.images.slice(0, 4);
+
+            // Store images data for lightbox
+            galleryImagesData = imagesToDisplay;
+
+            // Clear loading message
+            galleryGrid.innerHTML = '';
+
+            // Render gallery items
+            imagesToDisplay.forEach((image, index) => {
+                const galleryItem = document.createElement('div');
+
+                if (image.type === 'before-after') {
+                    // Before/After comparison item
+                    galleryItem.className = 'gallery-item gallery-item-before-after';
+                    galleryItem.dataset.index = index;
+                    galleryItem.innerHTML = `
+                        <div class="before-after-container" data-index="${index}">
+                            <div class="before-after-slider">
+                                <div class="before-image-wrapper">
+                                    <img src="http://localhost:3001${image.beforeImage.url}"
+                                         alt="Before"
+                                         class="gallery-image before-img"
+                                         onerror="this.src='images/placeholder.jpg'">
+                                    <span class="image-label before-label">Before</span>
+                                </div>
+                                <div class="after-image-wrapper">
+                                    <img src="http://localhost:3001${image.afterImage.url}"
+                                         alt="After"
+                                         class="gallery-image after-img"
+                                         onerror="this.src='images/placeholder.jpg'">
+                                    <span class="image-label after-label">After</span>
+                                </div>
+                                <div class="slider-handle">
+                                    <div class="slider-line"></div>
+                                    <div class="slider-button">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M18 8L22 12L18 16"></path>
+                                            <path d="M6 8L2 12L6 16"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="slider-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gallery-overlay">
+                            <span class="overlay-badge">Before & After</span>
+                        </div>
+                    `;
+                } else {
+                    // Single image item
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.dataset.index = index;
+                    galleryItem.innerHTML = `
+                        <img src="http://localhost:3001${image.url}"
+                             alt="Gallery image"
+                             class="gallery-image"
+                             onerror="this.src='images/placeholder.jpg'">
+                        <div class="gallery-overlay">
+                        </div>
+                    `;
+                }
+
+                galleryGrid.appendChild(galleryItem);
+            });
+
+            // Apply scroll animations to new gallery items
+            const newGalleryItems = document.querySelectorAll('.gallery-item');
+            newGalleryItems.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+
+            // Initialize before/after sliders
+            initializeBeforeAfterSliders();
+
+            // Add click handlers for gallery items
+            addGalleryClickHandlers();
+        } else {
+            // No images uploaded yet - show placeholder message
+            galleryGrid.innerHTML = `
+                <div class="gallery-empty">
+                    <p>No gallery images yet. Images will appear here once uploaded through the admin portal.</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading gallery images:', error);
+        // Fallback: Show error message
+        galleryGrid.innerHTML = `
+            <div class="gallery-error">
+                <p>Unable to load gallery images. Please ensure the server is running.</p>
+            </div>
+        `;
+    }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Add click handlers to gallery items
+function addGalleryClickHandlers() {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+
+    galleryItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            // Don't open lightbox if clicking on slider handle
+            if (e.target.closest('.slider-handle') || e.target.closest('.slider-button')) {
+                return;
+            }
+            const index = parseInt(item.dataset.index);
+            if (!isNaN(index)) {
+                openLightbox(index);
+            }
+        });
     });
-});
+}
+
+// ===================================
+// Before/After Slider Functionality
+// ===================================
+function initializeBeforeAfterSliders() {
+    const sliders = document.querySelectorAll('.before-after-slider');
+
+    sliders.forEach(slider => {
+        const handle = slider.querySelector('.slider-handle');
+        const beforeWrapper = slider.querySelector('.before-image-wrapper');
+
+        if (!handle || !beforeWrapper) return;
+
+        let isDragging = false;
+
+        const updateSliderPosition = (x) => {
+            const rect = slider.getBoundingClientRect();
+            let percentage = ((x - rect.left) / rect.width) * 100;
+            percentage = Math.max(0, Math.min(100, percentage));
+
+            beforeWrapper.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+            handle.style.left = `${percentage}%`;
+        };
+
+        handle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+
+        handle.addEventListener('touchstart', (e) => {
+            isDragging = true;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            updateSliderPosition(e.clientX);
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            updateSliderPosition(e.touches[0].clientX);
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Initialize at 50%
+        beforeWrapper.style.clipPath = 'inset(0 50% 0 0)';
+        handle.style.left = '50%';
+    });
+}
+
+// ===================================
+// Lightbox / Modal Functionality
+// ===================================
+let currentLightboxIndex = 0;
+let zoomLevel = 1;
+let isDragging = false;
+let startX, startY, translateX = 0, translateY = 0;
+
+function createLightbox() {
+    // Check if lightbox already exists
+    if (document.getElementById('galleryLightbox')) return;
+
+    const lightbox = document.createElement('div');
+    lightbox.id = 'galleryLightbox';
+    lightbox.className = 'lightbox';
+    lightbox.innerHTML = `
+        <div class="lightbox-overlay"></div>
+        <div class="lightbox-container">
+            <div class="lightbox-header">
+                <div class="lightbox-controls">
+                    <button class="lightbox-btn zoom-out-btn" title="Zoom Out">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                            <path d="M8 11h6"></path>
+                        </svg>
+                    </button>
+                    <button class="lightbox-btn zoom-in-btn" title="Zoom In">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                            <path d="M11 8v6"></path>
+                            <path d="M8 11h6"></path>
+                        </svg>
+                    </button>
+                    <button class="lightbox-btn fullscreen-btn" title="Fullscreen">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                        </svg>
+                    </button>
+                    <button class="lightbox-btn close-btn" title="Close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="lightbox-content">
+                <button class="lightbox-nav prev-btn">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6"></path>
+                    </svg>
+                </button>
+                <div class="lightbox-image-container">
+                    <div class="lightbox-image-wrapper">
+                        <!-- Image content will be inserted here -->
+                    </div>
+                </div>
+                <button class="lightbox-nav next-btn">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="lightbox-footer">
+                <span class="lightbox-counter"></span>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(lightbox);
+
+    // Add event listeners
+    const overlay = lightbox.querySelector('.lightbox-overlay');
+    const closeBtn = lightbox.querySelector('.close-btn');
+    const prevBtn = lightbox.querySelector('.prev-btn');
+    const nextBtn = lightbox.querySelector('.next-btn');
+    const zoomInBtn = lightbox.querySelector('.zoom-in-btn');
+    const zoomOutBtn = lightbox.querySelector('.zoom-out-btn');
+    const fullscreenBtn = lightbox.querySelector('.fullscreen-btn');
+    const imageWrapper = lightbox.querySelector('.lightbox-image-wrapper');
+
+    overlay.addEventListener('click', closeLightbox);
+    closeBtn.addEventListener('click', closeLightbox);
+    prevBtn.addEventListener('click', () => navigateLightbox(-1));
+    nextBtn.addEventListener('click', () => navigateLightbox(1));
+    zoomInBtn.addEventListener('click', () => zoom(0.25));
+    zoomOutBtn.addEventListener('click', () => zoom(-0.25));
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', handleLightboxKeydown);
+
+    // Mouse drag for panning when zoomed
+    imageWrapper.addEventListener('mousedown', startDrag);
+    imageWrapper.addEventListener('mousemove', drag);
+    imageWrapper.addEventListener('mouseup', endDrag);
+    imageWrapper.addEventListener('mouseleave', endDrag);
+
+    // Mouse wheel zoom
+    imageWrapper.addEventListener('wheel', handleWheel);
+}
+
+function openLightbox(index) {
+    createLightbox();
+    currentLightboxIndex = index;
+    zoomLevel = 1;
+    translateX = 0;
+    translateY = 0;
+    updateLightboxContent();
+
+    const lightbox = document.getElementById('galleryLightbox');
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('galleryLightbox');
+    if (lightbox) {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+
+        // Exit fullscreen if active
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        }
+    }
+}
+
+function updateLightboxContent() {
+    const lightbox = document.getElementById('galleryLightbox');
+    if (!lightbox || !galleryImagesData[currentLightboxIndex]) return;
+
+    const image = galleryImagesData[currentLightboxIndex];
+    const imageWrapper = lightbox.querySelector('.lightbox-image-wrapper');
+    const counter = lightbox.querySelector('.lightbox-counter');
+
+    counter.textContent = `${currentLightboxIndex + 1} / ${galleryImagesData.length}`;
+
+    if (image.type === 'before-after') {
+        imageWrapper.innerHTML = `
+            <div class="lightbox-before-after">
+                <div class="lightbox-before-after-slider">
+                    <div class="lightbox-before-wrapper">
+                        <img src="http://localhost:3001${image.beforeImage.url}" alt="Before">
+                        <span class="lightbox-image-label before">Before</span>
+                    </div>
+                    <div class="lightbox-after-wrapper">
+                        <img src="http://localhost:3001${image.afterImage.url}" alt="After">
+                        <span class="lightbox-image-label after">After</span>
+                    </div>
+                    <div class="lightbox-slider-handle">
+                        <div class="slider-line"></div>
+                        <div class="slider-button">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 8L22 12L18 16"></path>
+                                <path d="M6 8L2 12L6 16"></path>
+                            </svg>
+                        </div>
+                        <div class="slider-line"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        initializeLightboxSlider();
+    } else {
+        imageWrapper.innerHTML = `
+            <img src="http://localhost:3001${image.url}" alt="Gallery image" class="lightbox-main-image">
+        `;
+    }
+
+    // Reset zoom
+    zoomLevel = 1;
+    translateX = 0;
+    translateY = 0;
+    applyTransform();
+}
+
+function initializeLightboxSlider() {
+    const slider = document.querySelector('.lightbox-before-after-slider');
+    if (!slider) return;
+
+    const handle = slider.querySelector('.lightbox-slider-handle');
+    const beforeWrapper = slider.querySelector('.lightbox-before-wrapper');
+
+    let isDragging = false;
+
+    const updatePosition = (x) => {
+        const rect = slider.getBoundingClientRect();
+        let percentage = ((x - rect.left) / rect.width) * 100;
+        percentage = Math.max(0, Math.min(100, percentage));
+
+        beforeWrapper.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+        handle.style.left = `${percentage}%`;
+    };
+
+    handle.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    handle.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        e.stopPropagation();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        updatePosition(e.clientX);
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        updatePosition(e.touches[0].clientX);
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    document.addEventListener('touchend', () => {
+        isDragging = false;
+    });
+
+    // Initialize at 50%
+    beforeWrapper.style.clipPath = 'inset(0 50% 0 0)';
+    handle.style.left = '50%';
+}
+
+function navigateLightbox(direction) {
+    currentLightboxIndex += direction;
+
+    if (currentLightboxIndex < 0) {
+        currentLightboxIndex = galleryImagesData.length - 1;
+    } else if (currentLightboxIndex >= galleryImagesData.length) {
+        currentLightboxIndex = 0;
+    }
+
+    updateLightboxContent();
+}
+
+function zoom(delta) {
+    zoomLevel = Math.max(0.5, Math.min(3, zoomLevel + delta));
+    applyTransform();
+}
+
+function applyTransform() {
+    const imageWrapper = document.querySelector('.lightbox-image-wrapper');
+    if (imageWrapper) {
+        const content = imageWrapper.querySelector('img, .lightbox-before-after');
+        if (content) {
+            content.style.transform = `scale(${zoomLevel}) translate(${translateX}px, ${translateY}px)`;
+        }
+    }
+}
+
+function startDrag(e) {
+    if (zoomLevel > 1) {
+        isDragging = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+        e.target.style.cursor = 'grabbing';
+    }
+}
+
+function drag(e) {
+    if (!isDragging || zoomLevel <= 1) return;
+    translateX = e.clientX - startX;
+    translateY = e.clientY - startY;
+    applyTransform();
+}
+
+function endDrag(e) {
+    isDragging = false;
+    if (e.target) {
+        e.target.style.cursor = zoomLevel > 1 ? 'grab' : 'default';
+    }
+}
+
+function handleWheel(e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    zoom(delta);
+}
+
+function toggleFullscreen() {
+    const lightbox = document.getElementById('galleryLightbox');
+    if (!lightbox) return;
+
+    if (!document.fullscreenElement) {
+        lightbox.requestFullscreen().catch(err => {
+            console.log('Fullscreen error:', err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+function handleLightboxKeydown(e) {
+    const lightbox = document.getElementById('galleryLightbox');
+    if (!lightbox || !lightbox.classList.contains('active')) return;
+
+    switch (e.key) {
+        case 'Escape':
+            closeLightbox();
+            break;
+        case 'ArrowLeft':
+            navigateLightbox(-1);
+            break;
+        case 'ArrowRight':
+            navigateLightbox(1);
+            break;
+        case '+':
+        case '=':
+            zoom(0.25);
+            break;
+        case '-':
+            zoom(-0.25);
+            break;
+        case 'f':
+        case 'F':
+            toggleFullscreen();
+            break;
+    }
+}
+
+// Gallery tab handlers - tabs are now links to individual category pages
+function initializeGalleryTabs() {
+    // Gallery tabs are now <a> links that navigate to gallery.html?category=xxx
+    // No click handlers needed - they work as regular links
+}
 
 // ===================================
 // Active Navigation Link on Scroll
@@ -295,6 +834,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add any initialization code here
     setActiveNavLink();
+
+    // Initialize gallery tabs
+    initializeGalleryTabs();
+
+    // Load gallery images from server
+    loadGalleryImages('all');
 
     // Add loading animation complete
     document.body.style.opacity = '0';
