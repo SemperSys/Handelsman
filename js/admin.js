@@ -419,7 +419,13 @@ function filterGalleryByCategory() {
 }
 
 function getCategoryLabel(category) {
-    return category || 'Uncategorized';
+    const categoryNames = {
+        'residential-mowing': 'Residential Mowing',
+        'commercial-maintenance': 'Commercial Maintenance',
+        'trimming': 'Trimming',
+        'seasonal-cleanup': 'Seasonal Cleanup'
+    };
+    return categoryNames[category] || category || 'Uncategorized';
 }
 
 function toggleUploadForm() {

@@ -3,9 +3,150 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Email configuration
+const emailTransporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.hostinger.com',
+    port: parseInt(process.env.EMAIL_PORT) || 465,
+    secure: true, // use SSL
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// Verify email configuration on startup
+emailTransporter.verify((error, success) => {
+    if (error) {
+        console.error('Email configuration error:', error);
+    } else {
+        console.log('Email server is ready to send messages');
+    }
+});
+
+// Function to send confirmation email to customer
+async function sendCustomerConfirmationEmail(quoteData) {
+    const mailOptions = {
+        from: `"Handelsman's Quality Mowing" <${process.env.EMAIL_USER}>`,
+        to: quoteData.email,
+        subject: 'Quote Request Received - Handelsman\'s Quality Mowing',
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #2d5a27; color: white; padding: 20px; text-align: center; }
+                    .header h1 { margin: 0; font-size: 24px; }
+                    .content { padding: 20px; background-color: #f9f9f9; }
+                    .quote-details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                    .quote-details h3 { color: #2d5a27; margin-top: 0; }
+                    .quote-details p { margin: 8px 0; }
+                    .label { font-weight: bold; color: #555; }
+                    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+                    .cta { background-color: #2d5a27; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Handelsman's Quality Mowing</h1>
+                    </div>
+                    <div class="content">
+                        <h2>Thank You for Your Quote Request!</h2>
+                        <p>Dear ${quoteData.name},</p>
+                        <p>We have received your quote request and will get back to you within 24 hours. Below is a summary of your submission:</p>
+
+                        <div class="quote-details">
+                            <h3>Your Quote Request Details</h3>
+                            <p><span class="label">Name:</span> ${quoteData.name}</p>
+                            <p><span class="label">Phone:</span> ${quoteData.phone}</p>
+                            <p><span class="label">Email:</span> ${quoteData.email}</p>
+                            <p><span class="label">Property Address:</span> ${quoteData.address}</p>
+                            ${quoteData.propertySize ? `<p><span class="label">Property Size:</span> ${quoteData.propertySize}</p>` : ''}
+                            ${quoteData.services && quoteData.services.length > 0 ? `<p><span class="label">Services Requested:</span> ${Array.isArray(quoteData.services) ? quoteData.services.join(', ') : quoteData.services}</p>` : ''}
+                            ${quoteData.message ? `<p><span class="label">Additional Details:</span> ${quoteData.message}</p>` : ''}
+                        </div>
+
+                        <p>If you have any urgent questions, please don't hesitate to contact us:</p>
+                        <p><strong>Phone:</strong> 1-226-346-5520</p>
+                        <p><strong>Email:</strong> info@handelsmanmowing.ca</p>
+
+                        <p>We look forward to serving you!</p>
+                        <p>Best regards,<br>The Handelsman's Quality Mowing Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>Handelsman's Quality Mowing | Windsor & Surrounding Areas</p>
+                        <p>Mon-Sat: 7am - 7pm</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+    };
+
+    return emailTransporter.sendMail(mailOptions);
+}
+
+// Function to send notification email to business owner
+async function sendOwnerNotificationEmail(quoteData) {
+    const mailOptions = {
+        from: `"Website Quote System" <${process.env.EMAIL_USER}>`,
+        to: process.env.EMAIL_USER,
+        subject: `New Quote Request from ${quoteData.name}`,
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #2d5a27; color: white; padding: 20px; text-align: center; }
+                    .header h1 { margin: 0; font-size: 24px; }
+                    .content { padding: 20px; background-color: #f9f9f9; }
+                    .quote-details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #2d5a27; }
+                    .quote-details p { margin: 8px 0; }
+                    .label { font-weight: bold; color: #555; }
+                    .urgent { background-color: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 15px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>New Quote Request</h1>
+                    </div>
+                    <div class="content">
+                        <p>A new quote request has been submitted through the website:</p>
+
+                        <div class="quote-details">
+                            <p><span class="label">Name:</span> ${quoteData.name}</p>
+                            <p><span class="label">Phone:</span> <a href="tel:${quoteData.phone}">${quoteData.phone}</a></p>
+                            <p><span class="label">Email:</span> <a href="mailto:${quoteData.email}">${quoteData.email}</a></p>
+                            <p><span class="label">Property Address:</span> ${quoteData.address}</p>
+                            ${quoteData.propertySize ? `<p><span class="label">Property Size:</span> ${quoteData.propertySize}</p>` : ''}
+                            ${quoteData.services && quoteData.services.length > 0 ? `<p><span class="label">Services Requested:</span> ${Array.isArray(quoteData.services) ? quoteData.services.join(', ') : quoteData.services}</p>` : ''}
+                            ${quoteData.message ? `<p><span class="label">Additional Details:</span> ${quoteData.message}</p>` : ''}
+                            <p><span class="label">Submitted:</span> ${new Date(quoteData.timestamp).toLocaleString()}</p>
+                        </div>
+
+                        <div class="urgent">
+                            <strong>Remember:</strong> Please respond to this customer within 24 hours!
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+    };
+
+    return emailTransporter.sendMail(mailOptions);
+}
 
 // Middleware
 app.use(cors());
@@ -347,7 +488,7 @@ app.get('/api/quotes', (req, res) => {
 });
 
 // Create new quote
-app.post('/api/quotes', (req, res) => {
+app.post('/api/quotes', async (req, res) => {
     try {
         const quoteData = {
             id: Date.now().toString(),
@@ -360,10 +501,32 @@ app.post('/api/quotes', (req, res) => {
         quotes.push(quoteData);
         writeQuotesData(quotes);
 
+        // Send confirmation emails
+        let emailStatus = { customer: false, owner: false };
+
+        try {
+            // Send confirmation email to customer
+            await sendCustomerConfirmationEmail(quoteData);
+            emailStatus.customer = true;
+            console.log('Customer confirmation email sent to:', quoteData.email);
+        } catch (emailError) {
+            console.error('Failed to send customer email:', emailError);
+        }
+
+        try {
+            // Send notification email to business owner
+            await sendOwnerNotificationEmail(quoteData);
+            emailStatus.owner = true;
+            console.log('Owner notification email sent');
+        } catch (emailError) {
+            console.error('Failed to send owner notification email:', emailError);
+        }
+
         res.json({
             success: true,
             message: 'Quote request submitted successfully',
-            quote: quoteData
+            quote: quoteData,
+            emailSent: emailStatus
         });
     } catch (error) {
         console.error('Error creating quote:', error);

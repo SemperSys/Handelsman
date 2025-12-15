@@ -136,8 +136,14 @@ if (testimonialCards.length > 0) {
 const quoteForm = document.getElementById('quoteForm');
 
 if (quoteForm) {
-    quoteForm.addEventListener('submit', (e) => {
+    quoteForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // Get the submit button and disable it
+        const submitBtn = quoteForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
 
         // Get form data
         const formData = new FormData(quoteForm);
@@ -164,48 +170,58 @@ if (quoteForm) {
         });
         data.services = services;
 
-        // Add metadata
-        data.id = Date.now().toString();
-        data.timestamp = new Date().toISOString();
-        data.status = 'new';
-
-        // Save to localStorage for admin panel
         try {
-            const existingQuotes = JSON.parse(localStorage.getItem('quote_requests') || '[]');
-            existingQuotes.push(data);
-            localStorage.setItem('quote_requests', JSON.stringify(existingQuotes));
+            // Submit to backend API
+            const response = await fetch('/api/quotes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Also save to localStorage for admin panel (backup)
+                try {
+                    const existingQuotes = JSON.parse(localStorage.getItem('quote_requests') || '[]');
+                    existingQuotes.push(result.quote);
+                    localStorage.setItem('quote_requests', JSON.stringify(existingQuotes));
+                } catch (error) {
+                    console.error('Error saving quote to localStorage:', error);
+                }
+
+                // Show success message
+                alert('Thank you for your quote request! A confirmation email has been sent to your email address. We\'ll get back to you within 24 hours.');
+
+                // Reset form
+                quoteForm.reset();
+            } else {
+                throw new Error(result.message || 'Failed to submit quote');
+            }
         } catch (error) {
-            console.error('Error saving quote:', error);
+            console.error('Error submitting quote:', error);
+
+            // Fallback: Save to localStorage if server is unavailable
+            try {
+                data.id = Date.now().toString();
+                data.timestamp = new Date().toISOString();
+                data.status = 'new';
+                const existingQuotes = JSON.parse(localStorage.getItem('quote_requests') || '[]');
+                existingQuotes.push(data);
+                localStorage.setItem('quote_requests', JSON.stringify(existingQuotes));
+
+                alert('Thank you for your quote request! We\'ll get back to you within 24 hours. (Note: Please check your email for confirmation)');
+                quoteForm.reset();
+            } catch (localError) {
+                alert('There was an error submitting your request. Please try again or call us directly at 1-226-346-5520.');
+            }
+        } finally {
+            // Re-enable the submit button
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
         }
-
-        // Log data (in production, this would send to a server)
-        console.log('Quote Request:', data);
-
-        // Show success message
-        alert('Thank you for your quote request! We\'ll get back to you within 24 hours.');
-
-        // Reset form
-        quoteForm.reset();
-
-        // In production, you would send this data to your server:
-        /*
-        fetch('/api/quote', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Thank you for your quote request! We\'ll get back to you within 24 hours.');
-            quoteForm.reset();
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert('There was an error submitting your request. Please try again or call us directly.');
-        });
-        */
     });
 }
 
@@ -252,15 +268,39 @@ async function loadGalleryImages(category = 'all') {
     galleryGrid.innerHTML = '<div class="gallery-loading"><p>Loading gallery...</p></div>';
 
     try {
-        // Always fetch all images to enable filtering
-        const url = 'http://localhost:3001/api/gallery';
-
-        const response = await fetch(url);
+        // Fetch all images from the server
+        const response = await fetch('/api/gallery');
         const data = await response.json();
 
         if (data.success && data.images && data.images.length > 0) {
-            // Display all images (limited to first 4 for homepage preview)
-            let imagesToDisplay = data.images.slice(0, 4);
+            let imagesToDisplay = data.images;
+
+            if (category === 'all') {
+                // For "All Work" tab: show one image from each category
+                const categories = ['residential-mowing', 'commercial-maintenance', 'trimming', 'seasonal-cleanup'];
+                imagesToDisplay = [];
+
+                categories.forEach(cat => {
+                    const categoryImage = data.images.find(img => img.category === cat);
+                    if (categoryImage) {
+                        imagesToDisplay.push(categoryImage);
+                    }
+                });
+            } else {
+                // Filter images by specific category
+                imagesToDisplay = data.images.filter(img => img.category === category);
+            }
+
+            // Check if there are images to display after filtering
+            if (imagesToDisplay.length === 0) {
+                const categoryName = getCategoryDisplayName(category);
+                galleryGrid.innerHTML = `
+                    <div class="gallery-empty">
+                        <p>No images found in the "${categoryName}" category yet.</p>
+                    </div>
+                `;
+                return;
+            }
 
             // Store images data for lightbox
             galleryImagesData = imagesToDisplay;
@@ -276,18 +316,19 @@ async function loadGalleryImages(category = 'all') {
                     // Before/After comparison item
                     galleryItem.className = 'gallery-item gallery-item-before-after';
                     galleryItem.dataset.index = index;
+                    galleryItem.dataset.category = image.category || 'uncategorized';
                     galleryItem.innerHTML = `
                         <div class="before-after-container" data-index="${index}">
                             <div class="before-after-slider">
                                 <div class="before-image-wrapper">
-                                    <img src="http://localhost:3001${image.beforeImage.url}"
+                                    <img src="${image.beforeImage.url}"
                                          alt="Before"
                                          class="gallery-image before-img"
                                          onerror="this.src='images/placeholder.jpg'">
                                     <span class="image-label before-label">Before</span>
                                 </div>
                                 <div class="after-image-wrapper">
-                                    <img src="http://localhost:3001${image.afterImage.url}"
+                                    <img src="${image.afterImage.url}"
                                          alt="After"
                                          class="gallery-image after-img"
                                          onerror="this.src='images/placeholder.jpg'">
@@ -313,8 +354,9 @@ async function loadGalleryImages(category = 'all') {
                     // Single image item
                     galleryItem.className = 'gallery-item';
                     galleryItem.dataset.index = index;
+                    galleryItem.dataset.category = image.category || 'uncategorized';
                     galleryItem.innerHTML = `
-                        <img src="http://localhost:3001${image.url}"
+                        <img src="${image.url}"
                              alt="Gallery image"
                              class="gallery-image"
                              onerror="this.src='images/placeholder.jpg'">
@@ -584,11 +626,11 @@ function updateLightboxContent() {
             <div class="lightbox-before-after">
                 <div class="lightbox-before-after-slider">
                     <div class="lightbox-before-wrapper">
-                        <img src="http://localhost:3001${image.beforeImage.url}" alt="Before">
+                        <img src="${image.beforeImage.url}" alt="Before">
                         <span class="lightbox-image-label before">Before</span>
                     </div>
                     <div class="lightbox-after-wrapper">
-                        <img src="http://localhost:3001${image.afterImage.url}" alt="After">
+                        <img src="${image.afterImage.url}" alt="After">
                         <span class="lightbox-image-label after">After</span>
                     </div>
                     <div class="lightbox-slider-handle">
@@ -607,7 +649,7 @@ function updateLightboxContent() {
         initializeLightboxSlider();
     } else {
         imageWrapper.innerHTML = `
-            <img src="http://localhost:3001${image.url}" alt="Gallery image" class="lightbox-main-image">
+            <img src="${image.url}" alt="Gallery image" class="lightbox-main-image">
         `;
     }
 
@@ -767,10 +809,39 @@ function handleLightboxKeydown(e) {
     }
 }
 
-// Gallery tab handlers - tabs are now links to individual category pages
+// Helper function to get display name for category
+function getCategoryDisplayName(category) {
+    const categoryNames = {
+        'all': 'All Work',
+        'residential-mowing': 'Residential Mowing',
+        'commercial-maintenance': 'Commercial Maintenance',
+        'trimming': 'Trimming',
+        'seasonal-cleanup': 'Seasonal Cleanup'
+    };
+    return categoryNames[category] || category;
+}
+
+// Gallery tab handlers - handle tab clicks to filter images
 function initializeGalleryTabs() {
-    // Gallery tabs are now <a> links that navigate to gallery.html?category=xxx
-    // No click handlers needed - they work as regular links
+    const galleryTabs = document.querySelectorAll('.gallery-tab');
+
+    galleryTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // Remove active class from all tabs
+            galleryTabs.forEach(t => t.classList.remove('active'));
+
+            // Add active class to clicked tab
+            tab.classList.add('active');
+
+            // Get the category from the data attribute
+            const category = tab.dataset.category;
+
+            // Load images for the selected category
+            loadGalleryImages(category);
+        });
+    });
 }
 
 // ===================================
