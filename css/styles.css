@@ -203,32 +203,13 @@ ul {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, #2D5016 0%, #5a9216 100%);
+    background-image: url('../images/hero-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     z-index: -2;
 }
 
-.hero-background::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image:
-        repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 10px,
-            rgba(255, 255, 255, 0.03) 10px,
-            rgba(255, 255, 255, 0.03) 20px
-        );
-    animation: stripeMove 20s linear infinite;
-}
-
-@keyframes stripeMove {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(28px); }
-}
 
 .hero-overlay {
     position: absolute;
