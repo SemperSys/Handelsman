@@ -150,6 +150,13 @@
                 <div class="section-header">
                     <h2>Gallery Management</h2>
                     <div class="filter-controls">
+                        <select id="categoryFilter" class="filter-select">
+                            <option value="all">All Categories</option>
+                            <option value="residential-mowing">Residential Mowing</option>
+                            <option value="commercial-maintenance">Commercial Maintenance</option>
+                            <option value="trimming">Trimming</option>
+                            <option value="seasonal-cleanup">Seasonal Cleanup</option>
+                        </select>
                         <button class="btn btn-primary" id="uploadImageBtn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -174,7 +181,16 @@
                             <label for="imageFile">Select Image</label>
                             <input type="file" id="imageFile" name="image" accept="image/*" required>
                         </div>
-                        <input type="hidden" id="imageCategory" name="category" value="general">
+                        <div class="form-group">
+                            <label for="imageCategory">Category *</label>
+                            <select id="imageCategory" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="residential-mowing">Residential Mowing</option>
+                                <option value="commercial-maintenance">Commercial Maintenance</option>
+                                <option value="trimming">Trimming</option>
+                                <option value="seasonal-cleanup">Seasonal Cleanup</option>
+                            </select>
+                        </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Upload</button>
                             <button type="button" class="btn btn-secondary" id="cancelUpload">Cancel</button>
@@ -195,7 +211,16 @@
                                 <div class="image-preview" id="afterPreview"></div>
                             </div>
                         </div>
-                        <input type="hidden" id="beforeAfterCategory" name="category" value="general">
+                        <div class="form-group">
+                            <label for="beforeAfterCategory">Category *</label>
+                            <select id="beforeAfterCategory" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="residential-mowing">Residential Mowing</option>
+                                <option value="commercial-maintenance">Commercial Maintenance</option>
+                                <option value="trimming">Trimming</option>
+                                <option value="seasonal-cleanup">Seasonal Cleanup</option>
+                            </select>
+                        </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Upload Before & After</button>
                             <button type="button" class="btn btn-secondary" id="cancelBeforeAfterUpload">Cancel</button>

@@ -1,1 +1,41 @@
-[]
+[
+  {
+    "id": "1765602497818",
+    "name": "Test User",
+    "phone": "123-456-7890",
+    "email": "info@handelsmanmowing.ca",
+    "address": "123 Test Street, Windsor, ON",
+    "propertySize": "medium",
+    "services": [
+      "Lawn Mowing",
+      "Trimming"
+    ],
+    "message": "This is a test quote request",
+    "status": "new",
+    "timestamp": "2025-12-13T05:08:17.818Z"
+  },
+  {
+    "id": "1765602647480",
+    "name": "Mispah N  ",
+    "phone": "9494111762   ",
+    "email": "mary.dev8090@gmail.com",
+    "address": "43/128-1-A-2,N.R.Peta,Kurnool",
+    "propertySize": "small",
+    "message": "jhjklkmjnm,",
+    "services": [],
+    "status": "new",
+    "timestamp": "2025-12-13T05:10:47.480Z"
+  },
+  {
+    "id": "1766722454705",
+    "name": "Mispah N  ",
+    "phone": "9494111762   ",
+    "email": "mary.dev8090@gmail.com",
+    "address": "43/128-1-A-2,N.R.Peta,Kurnool",
+    "propertySize": "medium",
+    "message": "dfds",
+    "services": [],
+    "status": "new",
+    "timestamp": "2025-12-26T04:14:14.706Z"
+  }
+]
