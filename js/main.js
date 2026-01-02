@@ -254,15 +254,12 @@ animateOnScroll.forEach(el => {
 // ===================================
 // Gallery - Load Images from Server
 // ===================================
-let currentCategory = 'all';
 let galleryImagesData = [];
 
-async function loadGalleryImages(category = 'all') {
+async function loadGalleryImages() {
     const galleryGrid = document.getElementById('galleryGrid');
 
     if (!galleryGrid) return;
-
-    currentCategory = category;
 
     // Show loading state
     galleryGrid.innerHTML = '<div class="gallery-loading"><p>Loading gallery...</p></div>';
@@ -273,30 +270,22 @@ async function loadGalleryImages(category = 'all') {
         const data = await response.json();
 
         if (data.success && data.images && data.images.length > 0) {
-            let imagesToDisplay = data.images;
+            // Show one image from each category (max 4 images)
+            const categories = ['residential-mowing', 'commercial-maintenance', 'trimming', 'seasonal-cleanup'];
+            let imagesToDisplay = [];
 
-            if (category === 'all') {
-                // For "All Work" tab: show one image from each category
-                const categories = ['residential-mowing', 'commercial-maintenance', 'trimming', 'seasonal-cleanup'];
-                imagesToDisplay = [];
-
-                categories.forEach(cat => {
-                    const categoryImage = data.images.find(img => img.category === cat);
-                    if (categoryImage) {
-                        imagesToDisplay.push(categoryImage);
-                    }
-                });
-            } else {
-                // Filter images by specific category
-                imagesToDisplay = data.images.filter(img => img.category === category);
-            }
+            categories.forEach(cat => {
+                const categoryImage = data.images.find(img => img.category === cat);
+                if (categoryImage) {
+                    imagesToDisplay.push(categoryImage);
+                }
+            });
 
             // Check if there are images to display after filtering
             if (imagesToDisplay.length === 0) {
-                const categoryName = getCategoryDisplayName(category);
                 galleryGrid.innerHTML = `
                     <div class="gallery-empty">
-                        <p>No images found in the "${categoryName}" category yet.</p>
+                        <p>No images found yet.</p>
                     </div>
                 `;
                 return;
@@ -501,12 +490,10 @@ function createLightbox() {
         <div class="lightbox-overlay"></div>
         <div class="lightbox-container">
             <div class="lightbox-header">
-                <div class="lightbox-controls">
-                    <button class="lightbox-btn zoom-out-btn" title="Zoom Out">
+                <div class="lightbox-controls lightbox-controls-left">
+                    <button class="lightbox-btn fullscreen-btn" title="Fullscreen">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="M21 21l-4.35-4.35"></path>
-                            <path d="M8 11h6"></path>
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
                         </svg>
                     </button>
                     <button class="lightbox-btn zoom-in-btn" title="Zoom In">
@@ -517,9 +504,11 @@ function createLightbox() {
                             <path d="M8 11h6"></path>
                         </svg>
                     </button>
-                    <button class="lightbox-btn fullscreen-btn" title="Fullscreen">
+                    <button class="lightbox-btn zoom-out-btn" title="Zoom Out">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                            <path d="M8 11h6"></path>
                         </svg>
                     </button>
                     <button class="lightbox-btn close-btn" title="Close">
@@ -809,40 +798,6 @@ function handleLightboxKeydown(e) {
     }
 }
 
-// Helper function to get display name for category
-function getCategoryDisplayName(category) {
-    const categoryNames = {
-        'all': 'All Work',
-        'residential-mowing': 'Residential Mowing',
-        'commercial-maintenance': 'Commercial Maintenance',
-        'trimming': 'Trimming',
-        'seasonal-cleanup': 'Seasonal Cleanup'
-    };
-    return categoryNames[category] || category;
-}
-
-// Gallery tab handlers - handle tab clicks to filter images
-function initializeGalleryTabs() {
-    const galleryTabs = document.querySelectorAll('.gallery-tab');
-
-    galleryTabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            e.preventDefault();
-
-            // Remove active class from all tabs
-            galleryTabs.forEach(t => t.classList.remove('active'));
-
-            // Add active class to clicked tab
-            tab.classList.add('active');
-
-            // Get the category from the data attribute
-            const category = tab.dataset.category;
-
-            // Load images for the selected category
-            loadGalleryImages(category);
-        });
-    });
-}
 
 // ===================================
 // Active Navigation Link on Scroll
@@ -906,11 +861,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add any initialization code here
     setActiveNavLink();
 
-    // Initialize gallery tabs
-    initializeGalleryTabs();
-
-    // Load gallery images from server
-    loadGalleryImages('all');
+    // Load gallery images from server (4 images, one from each category)
+    loadGalleryImages();
 
     // Add loading animation complete
     document.body.style.opacity = '0';
