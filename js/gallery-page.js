@@ -1,13 +1,4 @@
-// Gallery Category Page JavaScript
-
-// Category labels mapping
-const categoryLabels = {
-    'all': 'All Work'
-};
-
-const categoryDescriptions = {
-    'all': 'Browse all our professional lawn care work'
-};
+// Gallery Full Page JavaScript
 
 // Gallery images data for lightbox
 let galleryImagesData = [];
@@ -20,39 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeGalleryPage() {
-    // Get category from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get('category') || 'all';
-
-    // Update page title and header
-    updatePageHeader(category);
-
-    // Load images for this category
-    loadCategoryImages(category);
+    // Load all images from all categories
+    loadAllImages();
 }
 
-function updatePageHeader(category) {
-    const title = categoryLabels[category] || 'Gallery';
-    const subtitle = categoryDescriptions[category] || 'Browse our work';
-
-    document.getElementById('categoryTitle').textContent = title;
-    document.getElementById('categorySubtitle').textContent = subtitle;
-    document.getElementById('categoryBreadcrumb').textContent = title;
-    document.title = `${title} | Handelsman's Quality Mowing`;
-}
-
-async function loadCategoryImages(category) {
+async function loadAllImages() {
     const galleryGrid = document.getElementById('categoryGalleryGrid');
     const emptyState = document.getElementById('galleryEmpty');
 
     try {
-        // Build API URL
-        let apiUrl = 'http://localhost:3001/api/gallery';
-        if (category && category !== 'all') {
-            apiUrl += `?category=${category}`;
-        }
-
-        const response = await fetch(apiUrl);
+        // Fetch all images from the server
+        const response = await fetch('/api/gallery');
         const data = await response.json();
 
         if (data.success && data.images && data.images.length > 0) {
@@ -83,14 +52,14 @@ function renderGalleryImages(images) {
                 <div class="before-after-container" data-index="${index}">
                     <div class="before-after-slider">
                         <div class="before-image-wrapper">
-                            <img src="http://localhost:3001${image.beforeImage.url}"
+                            <img src="${image.beforeImage.url}"
                                  alt="Before"
                                  class="gallery-image before-img"
                                  onerror="this.src='images/placeholder.jpg'">
                             <span class="image-label before-label">Before</span>
                         </div>
                         <div class="after-image-wrapper">
-                            <img src="http://localhost:3001${image.afterImage.url}"
+                            <img src="${image.afterImage.url}"
                                  alt="After"
                                  class="gallery-image after-img"
                                  onerror="this.src='images/placeholder.jpg'">
@@ -116,7 +85,7 @@ function renderGalleryImages(images) {
             galleryItem.className = 'gallery-page-item';
             galleryItem.dataset.index = index;
             galleryItem.innerHTML = `
-                <img src="http://localhost:3001${image.url}"
+                <img src="${image.url}"
                      alt="Gallery image"
                      class="gallery-image"
                      onerror="this.src='images/placeholder.jpg'">
@@ -230,12 +199,10 @@ function createLightbox() {
         <div class="lightbox-overlay"></div>
         <div class="lightbox-container">
             <div class="lightbox-header">
-                <div class="lightbox-controls">
-                    <button class="lightbox-btn zoom-out-btn" title="Zoom Out">
+                <div class="lightbox-controls lightbox-controls-left">
+                    <button class="lightbox-btn fullscreen-btn" title="Fullscreen">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="M21 21l-4.35-4.35"></path>
-                            <path d="M8 11h6"></path>
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
                         </svg>
                     </button>
                     <button class="lightbox-btn zoom-in-btn" title="Zoom In">
@@ -246,9 +213,11 @@ function createLightbox() {
                             <path d="M8 11h6"></path>
                         </svg>
                     </button>
-                    <button class="lightbox-btn fullscreen-btn" title="Fullscreen">
+                    <button class="lightbox-btn zoom-out-btn" title="Zoom Out">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                            <path d="M8 11h6"></path>
                         </svg>
                     </button>
                     <button class="lightbox-btn close-btn" title="Close">
@@ -342,11 +311,11 @@ function updateLightboxContent() {
             <div class="lightbox-before-after">
                 <div class="lightbox-before-after-slider">
                     <div class="lightbox-before-wrapper">
-                        <img src="http://localhost:3001${image.beforeImage.url}" alt="Before">
+                        <img src="${image.beforeImage.url}" alt="Before">
                         <span class="lightbox-image-label before">Before</span>
                     </div>
                     <div class="lightbox-after-wrapper">
-                        <img src="http://localhost:3001${image.afterImage.url}" alt="After">
+                        <img src="${image.afterImage.url}" alt="After">
                         <span class="lightbox-image-label after">After</span>
                     </div>
                     <div class="lightbox-slider-handle">
@@ -365,7 +334,7 @@ function updateLightboxContent() {
         initializeLightboxSlider();
     } else {
         imageWrapper.innerHTML = `
-            <img src="http://localhost:3001${image.url}" alt="Gallery image" class="lightbox-main-image">
+            <img src="${image.url}" alt="Gallery image" class="lightbox-main-image">
         `;
     }
 

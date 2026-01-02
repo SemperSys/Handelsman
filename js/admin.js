@@ -145,12 +145,6 @@ function setupEventListeners() {
     // Setup image previews for before/after uploads
     setupImagePreviews();
 
-    // Category filter
-    const categoryFilter = document.getElementById('categoryFilter');
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', filterGalleryByCategory);
-    }
-
     // Settings forms
     const passwordForm = document.getElementById('passwordForm');
     if (passwordForm) {
@@ -341,7 +335,7 @@ window.setUploadType = setUploadType;
 // Gallery Management
 async function loadGalleryImages() {
     try {
-        const response = await fetch('http://localhost:3001/api/gallery');
+        const response = await fetch('/api/gallery');
         const data = await response.json();
 
         if (data.success) {
@@ -369,7 +363,7 @@ function renderGallery() {
     container.innerHTML = galleryImages.map((img, index) => {
         if (img.type === 'before-after') {
             return `
-                <div class="gallery-item-admin before-after-item" data-category="${img.category || 'uncategorized'}">
+                <div class="gallery-item-admin before-after-item">
                     <div class="before-after-badge">Before & After</div>
                     <div class="before-after-preview">
                         <div class="before-preview-img">
@@ -382,7 +376,6 @@ function renderGallery() {
                         </div>
                     </div>
                     <div class="gallery-item-info">
-                        ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
                         <div class="gallery-item-actions">
                             <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
                         </div>
@@ -391,10 +384,9 @@ function renderGallery() {
             `;
         } else {
             return `
-                <div class="gallery-item-admin" data-category="${img.category || 'uncategorized'}">
+                <div class="gallery-item-admin">
                     <img src="${img.url}" alt="Gallery image">
                     <div class="gallery-item-info">
-                        ${img.category ? `<span class="category-badge">${getCategoryLabel(img.category)}</span>` : ''}
                         <div class="gallery-item-actions">
                             <button class="btn btn-sm btn-danger" onclick="deleteGalleryImage(${index})">Delete</button>
                         </div>
@@ -403,29 +395,6 @@ function renderGallery() {
             `;
         }
     }).join('');
-}
-
-function filterGalleryByCategory() {
-    const filterValue = document.getElementById('categoryFilter').value;
-    const galleryItems = document.querySelectorAll('.gallery-item-admin');
-
-    galleryItems.forEach(item => {
-        if (filterValue === 'all' || item.dataset.category === filterValue) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-}
-
-function getCategoryLabel(category) {
-    const categoryNames = {
-        'residential-mowing': 'Residential Mowing',
-        'commercial-maintenance': 'Commercial Maintenance',
-        'trimming': 'Trimming',
-        'seasonal-cleanup': 'Seasonal Cleanup'
-    };
-    return categoryNames[category] || category || 'Uncategorized';
 }
 
 function toggleUploadForm() {
@@ -437,15 +406,9 @@ async function handleImageUpload(e) {
     e.preventDefault();
 
     const fileInput = document.getElementById('imageFile');
-    const category = document.getElementById('imageCategory').value;
 
     if (!fileInput.files || !fileInput.files[0]) {
         showNotification('Please select an image', 'error');
-        return;
-    }
-
-    if (!category) {
-        showNotification('Please select a category', 'error');
         return;
     }
 
@@ -467,12 +430,11 @@ async function handleImageUpload(e) {
     // Create FormData
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('category', category);
 
     try {
         showNotification('Uploading image...', 'info');
 
-        const response = await fetch('http://localhost:3001/api/gallery/upload', {
+        const response = await fetch('/api/gallery/upload', {
             method: 'POST',
             body: formData
         });
@@ -510,7 +472,7 @@ async function deleteGalleryImage(index) {
     }
 
     try {
-        const response = await fetch(`http://localhost:3001/api/gallery/${image.id}`, {
+        const response = await fetch(`/api/gallery/${image.id}`, {
             method: 'DELETE'
         });
 
@@ -534,7 +496,6 @@ async function handleBeforeAfterUpload(e) {
 
     const beforeFileInput = document.getElementById('beforeImageFile');
     const afterFileInput = document.getElementById('afterImageFile');
-    const category = document.getElementById('beforeAfterCategory').value;
 
     if (!beforeFileInput.files || !beforeFileInput.files[0]) {
         showNotification('Please select a before image', 'error');
@@ -543,11 +504,6 @@ async function handleBeforeAfterUpload(e) {
 
     if (!afterFileInput.files || !afterFileInput.files[0]) {
         showNotification('Please select an after image', 'error');
-        return;
-    }
-
-    if (!category) {
-        showNotification('Please select a category', 'error');
         return;
     }
 
@@ -592,12 +548,11 @@ async function handleBeforeAfterUpload(e) {
     const formData = new FormData();
     formData.append('beforeImage', beforeFile);
     formData.append('afterImage', afterFile);
-    formData.append('category', category);
 
     try {
         showNotification('Uploading before/after images...', 'info');
 
-        const response = await fetch('http://localhost:3001/api/gallery/upload-before-after', {
+        const response = await fetch('/api/gallery/upload-before-after', {
             method: 'POST',
             body: formData
         });

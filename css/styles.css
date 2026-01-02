@@ -713,6 +713,17 @@ section {
     gap: 1.5rem;
 }
 
+/* Gallery See More Button */
+.gallery-see-more {
+    text-align: center;
+    margin-top: 3rem;
+}
+
+.gallery-see-more .btn {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+}
+
 .gallery-item {
     position: relative;
     overflow: hidden;
@@ -1466,6 +1477,13 @@ section {
 .lightbox-controls {
     display: flex;
     gap: 8px;
+}
+
+.lightbox-controls-left {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index: 100;
 }
 
 .lightbox-btn {
