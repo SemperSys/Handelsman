@@ -272,24 +272,12 @@ app.post('/api/gallery/upload', upload.single('image'), (req, res) => {
             });
         }
 
-        const { category } = req.body;
-
-        if (!category) {
-            // Delete the uploaded file if category is missing
-            fs.unlinkSync(req.file.path);
-            return res.status(400).json({
-                success: false,
-                message: 'Category is required'
-            });
-        }
-
         // Create image data
         const imageData = {
             id: Date.now().toString(),
             filename: req.file.filename,
             originalName: req.file.originalname,
             url: `/uploads/${req.file.filename}`,
-            category: category,
             size: req.file.size,
             uploadedAt: new Date().toISOString()
         };
@@ -349,17 +337,6 @@ app.post('/api/gallery/upload-before-after', (req, res) => {
                 });
             }
 
-            const { category } = req.body;
-
-            if (!category) {
-                fs.unlinkSync(req.files.beforeImage[0].path);
-                fs.unlinkSync(req.files.afterImage[0].path);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Category is required'
-                });
-            }
-
             const beforeFile = req.files.beforeImage[0];
             const afterFile = req.files.afterImage[0];
 
@@ -379,7 +356,6 @@ app.post('/api/gallery/upload-before-after', (req, res) => {
                     url: `/uploads/${afterFile.filename}`,
                     size: afterFile.size
                 },
-                category: category,
                 uploadedAt: new Date().toISOString()
             };
 

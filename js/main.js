@@ -270,26 +270,8 @@ async function loadGalleryImages() {
         const data = await response.json();
 
         if (data.success && data.images && data.images.length > 0) {
-            // Show one image from each category (max 4 images)
-            const categories = ['residential-mowing', 'commercial-maintenance', 'trimming', 'seasonal-cleanup'];
-            let imagesToDisplay = [];
-
-            categories.forEach(cat => {
-                const categoryImage = data.images.find(img => img.category === cat);
-                if (categoryImage) {
-                    imagesToDisplay.push(categoryImage);
-                }
-            });
-
-            // Check if there are images to display after filtering
-            if (imagesToDisplay.length === 0) {
-                galleryGrid.innerHTML = `
-                    <div class="gallery-empty">
-                        <p>No images found yet.</p>
-                    </div>
-                `;
-                return;
-            }
+            // Show up to 4 images on the main page
+            let imagesToDisplay = data.images.slice(0, 4);
 
             // Store images data for lightbox
             galleryImagesData = imagesToDisplay;
