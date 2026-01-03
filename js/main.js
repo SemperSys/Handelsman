@@ -1,4 +1,83 @@
 // ===================================
+// Toast Notification System
+// ===================================
+function showToast(message, type = 'success', title = null, duration = 5000) {
+    // Create container if it doesn't exist
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    // Set default titles based on type
+    if (!title) {
+        title = type === 'success' ? 'Success!' : type === 'error' ? 'Error' : 'Notice';
+    }
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    // Icon SVGs
+    const icons = {
+        success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
+        error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+        warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'
+    };
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.success}</div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+        <div class="toast-progress" style="width: 100%"></div>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Progress bar animation
+    const progress = toast.querySelector('.toast-progress');
+    progress.style.transition = `width ${duration}ms linear`;
+    requestAnimationFrame(() => {
+        progress.style.width = '0%';
+    });
+
+    // Close button handler
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => removeToast(toast));
+
+    // Auto remove after duration
+    setTimeout(() => removeToast(toast), duration);
+
+    return toast;
+}
+
+function removeToast(toast) {
+    if (!toast || toast.classList.contains('hide')) return;
+
+    toast.classList.add('hide');
+    toast.classList.remove('show');
+
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 400);
+}
+
+// ===================================
 // Navigation & Header
 // ===================================
 
@@ -192,8 +271,13 @@ if (quoteForm) {
                     console.error('Error saving quote to localStorage:', error);
                 }
 
-                // Show success message
-                alert('Thank you for your quote request! A confirmation email has been sent to your email address. We\'ll get back to you within 24 hours.');
+                // Show success toast
+                showToast(
+                    'A confirmation email has been sent to your email address. We\'ll get back to you within 24 hours.',
+                    'success',
+                    'Thank you for your quote request!',
+                    6000
+                );
 
                 // Reset form
                 quoteForm.reset();
@@ -212,10 +296,20 @@ if (quoteForm) {
                 existingQuotes.push(data);
                 localStorage.setItem('quote_requests', JSON.stringify(existingQuotes));
 
-                alert('Thank you for your quote request! We\'ll get back to you within 24 hours. (Note: Please check your email for confirmation)');
+                showToast(
+                    'We\'ll get back to you within 24 hours. Please check your email for confirmation.',
+                    'success',
+                    'Thank you for your quote request!',
+                    6000
+                );
                 quoteForm.reset();
             } catch (localError) {
-                alert('There was an error submitting your request. Please try again or call us directly at 1-226-346-5520.');
+                showToast(
+                    'There was an error submitting your request. Please try again or call us directly at 1-226-346-5520.',
+                    'error',
+                    'Submission Failed',
+                    8000
+                );
             }
         } finally {
             // Re-enable the submit button
