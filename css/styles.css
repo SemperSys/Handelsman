@@ -507,6 +507,12 @@ section {
 
     .highlight-item {
         padding: 1.5rem 1rem;
+        border-color: var(--fresh-green);
+    }
+
+    .highlight-icon {
+        background-color: var(--fresh-green);
+        color: white;
     }
 }
 
@@ -586,11 +592,14 @@ section {
 
     .service-card {
         padding: 2rem 1.5rem;
+        border-color: var(--fresh-green);
     }
 
     .service-icon {
         width: 70px;
         height: 70px;
+        background-color: var(--fresh-green);
+        color: white;
     }
 }
 
@@ -1219,6 +1228,12 @@ section {
     }
 
     .nav-phone {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        order: -1;
+    }
+
+    .nav-phone span {
         display: none;
     }
 
@@ -1243,12 +1258,41 @@ section {
 }
 
 @media (max-width: 640px) {
+    .nav-phone {
+        padding: 0.5rem;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+    }
+
+    .nav-phone svg {
+        width: 18px;
+        height: 18px;
+    }
+
     .hero-title {
         font-size: 2.5rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+        padding: 0 0.5rem;
     }
 
     .hero-subtitle {
         font-size: 1.1rem;
+    }
+
+    .hero-content {
+        padding: var(--spacing-sm);
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+    }
+
+    .hero-scroll {
+        display: none;
     }
 
     .hero-cta {
@@ -1294,6 +1338,26 @@ section {
 
     .testimonial-card {
         padding: 2rem 1.5rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 400px) {
+    .hero-title {
+        font-size: 2rem;
+        line-height: 1.2;
+    }
+
+    .hero-content {
+        padding: 1rem 0.75rem;
+    }
+
+    .trust-number {
+        font-size: 1.75rem;
+    }
+
+    .trust-label {
+        font-size: 0.8rem;
     }
 }
 
