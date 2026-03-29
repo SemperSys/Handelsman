@@ -302,7 +302,7 @@ ul {
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    display: none;
+    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
@@ -311,6 +311,7 @@ ul {
     opacity: 0.8;
     transition: var(--transition-smooth);
     animation: bounce 2s infinite;
+    text-decoration: none;
 }
 
 .hero-scroll:hover {
@@ -1315,7 +1316,14 @@ section {
     }
 
     .hero-scroll {
-        display: none;
+        display: flex;
+        bottom: 1rem;
+        font-size: 0.75rem;
+    }
+
+    .hero-scroll .mouse-icon svg {
+        width: 22px;
+        height: 34px;
     }
 
     .hero-cta {
